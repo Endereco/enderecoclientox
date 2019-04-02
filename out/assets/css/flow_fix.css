@@ -1,0 +1,7 @@
+@media (min-width: 990px) {
+
+    #addressForm,
+    #shippingAddressForm {
+        padding-right: 15px;
+    }
+}

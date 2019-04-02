@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OX>
+    <OXMENU id="ENDERECOCLIENTOX_MAIN">
+        <MAINMENU id="ENDERECOCLIENTOX_HOME">
+            <SUBMENU id="ENDERECOCLIENTOX_SETTINGS" cl="enderecosettings"/>
+        </MAINMENU>
+    </OXMENU>
+</OX>

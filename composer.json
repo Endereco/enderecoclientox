@@ -1,0 +1,37 @@
+{
+    "name": "endereco/enderecoclientox",
+    "type": "oxidshop-module",
+    "license": "GPL-3.0-only",
+    "extra": {
+        "oxideshop": {
+            "target-directory": "endereco/enderecoclientox"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ilja Weber",
+            "email": "ilja.weber@mobilemojo.de"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "repositories": {
+        "oxid-esales/coding-standards": {
+            "type": "vcs",
+            "url": "https://github.com/OXID-eSales/coding_standards.git"
+        },
+        "squizlabs/php_codesniffer": {
+            "type": "vcs",
+            "url": "https://github.com/OXID-eSales/PHP_CodeSniffer.git"
+        }
+    },
+    "require-dev": {
+        "oxid-esales/coding-standards": "^2.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Endereco\\OxidClient\\": "../../../source/modules/endereco/enderecoclientox"
+        }
+    }
+}

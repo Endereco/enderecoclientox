@@ -88,7 +88,7 @@ class Installer
      */
     public static function cleanTmp($sClearFolderPath = '')
     {
-        $sTempFolderPath = realpath(oxRegistry::getConfig()->getConfigParam('sCompileDir'));
+        $sTempFolderPath = realpath(\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('sCompileDir'));
 
         if (!empty($sClearFolderPath) &&
             ( strpos($sClearFolderPath, $sTempFolderPath) !== false ) &&

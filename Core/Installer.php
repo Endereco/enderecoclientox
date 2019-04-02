@@ -75,7 +75,6 @@ class Installer
      */
     public static function onDeactivate()
     {
-        parent::onDeactivate();
         self::cleanTmp();
     }
 

@@ -2,7 +2,7 @@
 
 ## Installation
 
-To install this module run `composer require endereco/enderecoclientox:*` in your project root. This will download the module and register its namespaces.
+To install this module run `composer require endereco/enderecoclientox` in your project root. This will download the module and register its namespaces.
 
 ## Update
 

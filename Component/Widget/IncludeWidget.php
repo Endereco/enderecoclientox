@@ -80,13 +80,6 @@ class IncludeWidget extends \OxidEsales\Eshop\Application\Component\Widget\Widge
             $this->_aViewData['enderecocstrs'][$result[0]] = $result[1];
         }
 
-        $this->_aViewData['enderecotexts'] = array(
-            'ENDERECOCLIENTOX_ADDRESSCHECK_HEAD' => 'Adresse prüfen',
-            'ENDERECOCLIENTOX_ADDRESSCHECK_BTN' => 'Adresse übernehmen',
-            'ENDERECOCLIENTOX_ADDRESSCHECK_AREA1' => 'Ihre Eingabe:',
-            'ENDERECOCLIENTOX_ADDRESSCHECK_AREA2' => 'Unsere Vorschläge:',
-        );
-
         return $this->getThisTemplate();
     }
 }

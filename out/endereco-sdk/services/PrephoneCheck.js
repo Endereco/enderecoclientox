@@ -83,10 +83,12 @@ function PrephoneCheck(config) {
         if(4 === $self.connector.readyState) {
             if ($self.connector.responseText && '' !== $self.connector.responseText) {
                 $data = JSON.parse($self.connector.responseText);
-                if ($data.result.status.includes('A1000')) {
-                    $self.inputElement.value = $data.result.prephoneNumber;
-                    event = new Event('endereco.valid');
-                    $self.inputElement.dispatchEvent(event);
+                if (undefined !== $data.result) {
+                    if ($data.result.status.includes('A1000')) {
+                        $self.inputElement.value = $data.result.prephoneNumber;
+                        event = new Event('endereco.valid');
+                        $self.inputElement.dispatchEvent(event);
+                    }
                 }
             }
         }

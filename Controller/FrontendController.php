@@ -75,8 +75,6 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
             $tid = 'not_set';
         }
 
-        \Endereco\OxidClient\Model\Accounting::countTransaction($tid);
-
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -92,6 +90,13 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
         );
 
         $result = curl_exec($ch);
+
+        $resultData = json_decode($result, true);
+
+        if (isset($resultData['result'])) {
+            \Endereco\OxidClient\Model\Accounting::countTransaction($tid);
+        }
+
         echo $result;
         die();
     }

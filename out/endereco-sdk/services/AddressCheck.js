@@ -355,13 +355,15 @@ function AddressCheck(config) {
         if(4 === $self.connector.readyState) {
             if ($self.connector.responseText && '' !== $self.connector.responseText) {
                 $data = JSON.parse($self.connector.responseText);
-                $self.predictions = $data.result.predictions;
-                if ($data.result.status.includes('A1000') && !$data.result.status.includes('A1100')) {
-                    $self.markSuccess();
-                }
-                if ($data.result.predictions.length > 1 || $data.result.status.includes('A1100')) {
-                    $self.renderVariants();
-                }
+                if (undefined !== $data.result) {
+                    $self.predictions = $data.result.predictions;
+                    if ($data.result.status.includes('A1000') && !$data.result.status.includes('A1100')) {
+                        $self.markSuccess();
+                    }
+                    if ($data.result.predictions.length > 1 || $data.result.status.includes('A1100')) {
+                        $self.renderVariants();
+                    }
+                }                
             }
         }
 

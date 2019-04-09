@@ -136,8 +136,10 @@ function NameCheck(config) {
         if(4 === $self.connector.readyState) {
             if ($self.connector.responseText && '' !== $self.connector.responseText) {
                 $data = JSON.parse($self.connector.responseText);
-                $self.gender = $data.result.gender;
-                $self.checkSalutation();
+                if (undefined !== $data.result) {
+                    $self.gender = $data.result.gender;
+                    $self.checkSalutation();
+                }                
             }
         }
 

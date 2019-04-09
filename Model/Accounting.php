@@ -49,6 +49,8 @@ class Accounting
 
         $data_string = json_encode($data);
         $transactions = $_SESSION['endereco'];
+        $hasTransactions = false;
+        $transactionId = "";
 
         if ($transactions) {
             $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
@@ -57,6 +59,9 @@ class Accounting
             $ch = curl_init($oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox'));
             foreach ($transactions as $session_tid => $counter) {
                 if (0 < $counter) {
+                    $hasTransactions = true;
+                    $transactionId = $session_tid;
+
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
                     curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -75,11 +80,40 @@ class Accounting
                     curl_exec($ch);
                 }
             }
+
+            if ($hasTransactions) {
+                $data = array(
+                    'jsonrpc' => '2.0',
+                    'method'  => 'doConversion',
+                );
+
+                $data_string = json_encode($data);
+
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4); // 4 seconds
+                curl_setopt($ch, CURLOPT_TIMEOUT, 4); // 4 seconds
+                curl_setopt(
+                    $ch,
+                    CURLOPT_HTTPHEADER,
+                    array(
+                        'Content-Type: application/json',
+                        'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox')),
+                        'X-Transaction-Id: ' . $transactionId,
+                        'X-Transaction-Referer: ' . $_SERVER['HTTP_REFERER'],
+                        'Content-Length: ' . strlen($data_string))
+                );
+                curl_exec($ch);
+            }
+
             unset($_SESSION['endereco']);
 
         }
 
     }
+
+
 
     /**
      *  Send doAccontung request to all open transactions and reset counter.

@@ -73,21 +73,22 @@ function EmailCheck(config) {
         if(4 === $self.connector.readyState) {
             if ($self.connector.responseText && '' !== $self.connector.responseText) {
                 $data = JSON.parse($self.connector.responseText);
+                if (undefined !== $data.result) {
+                    if ($data.result.status.includes('A1000')) {
+                        event = new Event('endereco.valid');
+                        $self.inputElement.dispatchEvent(event);
+                    }
 
-                if ($data.result.status.includes('A1000')) {
-                    event = new Event('endereco.valid');
-                    $self.inputElement.dispatchEvent(event);
-                }
+                    if ($data.result.status.includes('A4000')) {
+                        event = new Event('endereco.check');
+                        $self.inputElement.dispatchEvent(event);
+                    }
 
-                if ($data.result.status.includes('A4000')) {
-                    event = new Event('endereco.check');
-                    $self.inputElement.dispatchEvent(event);
-                }
-
-                if ($data.result.status.includes('A5000')) {
-                    event = new Event('endereco.check');
-                    $self.inputElement.dispatchEvent(event);
-                }
+                    if ($data.result.status.includes('A5000')) {
+                        event = new Event('endereco.check');
+                        $self.inputElement.dispatchEvent(event);
+                    }
+                }                
             }
         }
 

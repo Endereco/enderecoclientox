@@ -12,7 +12,7 @@
  *            version 3 (GPLv3)
  * @link      https://www.endereco.de/
  */
- 
+
 $sLangName  = "English";
 // -------------------------------
 // RESOURCE IDENTITFIER = STRING
@@ -54,10 +54,10 @@ $aLang = array(
     'ENDERECOCLIENTOX_HELP_STREETAUTOCOMPLETE' => 'While activated, this service provides the user with a street name suggestions upon inserted letters, available for chosen Postcode + City combination.',
 
     'ENDERECOCLIENTOX_SETTINGS_EMAILCHECK' => 'eMail Check:',
-    'ENDERECOCLIENTOX_HELP_EMAILCHECK' => 'While activated,  eMail Check verifies the syntax, availability and deliverability of an entered eMail-Address. It also checks whether it is a one-time or spam eMail Address.',
+    'ENDERECOCLIENTOX_HELP_EMAILCHECK' => 'While activated,  eMail Check verifies the syntax, availability and deliverability of an entered eMail Address. It also checks whether it is a one-time or spam eMail Address.',
 
     'ENDERECOCLIENTOX_SETTINGS_NAMECHECK' => 'Salutation Check:',
-    'ENDERECOCLIENTOX_HELP_NAMECHECK' => 'While activated, this service verifies whether chosen salutation corresponds to the first name.',
+    'ENDERECOCLIENTOX_HELP_NAMECHECK' => 'While activated, this service verifies whether chosen salutation corresponds to the first name. It is also corrects small and capital Letters',
 
     'ENDERECOCLIENTOX_SETTINGS_PREPHONECHECK' => 'Area code check (Number formatting):',
     'ENDERECOCLIENTOX_HELP_PREPHONECHECK' => 'White activated, this service verifies whether an inserted area code exists and formats the number in accordance to chosen format.',
@@ -83,26 +83,26 @@ $aLang = array(
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE3' => 'Colors:', /*Hier kann mann schreiben: "IT is possible to change the displayed colors for text, data fields, hints as well as warning und success sign"*/
 
     'ENDERECOCLIENTOX_SETTINGS_COLOR_COL1' => 'default',
-    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL2' => 'mouseover', /*Ich vertehe diese Farbe nicht. Wann taucht sie auf?*/
+    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL2' => 'mouseover',
     'ENDERECOCLIENTOX_SETTINGS_COLOR_COL3' => 'text',
 
     'ENDERECOCLIENTOX_SETTINGS_PRIMARYCOLOR' => 'Main color:',
-    'ENDERECOCLIENTOX_HELP_PRIMARYCOLOR' => 'Lorem ipsum', /*Ich würde die Erklärungen für einzelne farben lassen*/
-    'ENDERECOCLIENTOX_HELP_PRIMARYCOLORHOVER' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_PRIMARYCOLORTEXT' => 'Lorem ipsum',
+    'ENDERECOCLIENTOX_HELP_PRIMARYCOLOR' => '',
+    'ENDERECOCLIENTOX_HELP_PRIMARYCOLORHOVER' => '',
+    'ENDERECOCLIENTOX_HELP_PRIMARYCOLORTEXT' => '',
 
     'ENDERECOCLIENTOX_SETTINGS_SECONDARYCOLOR' => 'Secondary color:',
-    'ENDERECOCLIENTOX_HELP_SECONDARYCOLOR' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_SECONDARYCOLORHOVER' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_SECONDARYCOLORTEXT' => 'Lorem ipsum',
+    'ENDERECOCLIENTOX_HELP_SECONDARYCOLOR' => '',
+    'ENDERECOCLIENTOX_HELP_SECONDARYCOLORHOVER' => '',
+    'ENDERECOCLIENTOX_HELP_SECONDARYCOLORTEXT' => '',
 
     'ENDERECOCLIENTOX_SETTINGS_WARNINGCOLOR' => 'Color for warning:',
-    'ENDERECOCLIENTOX_HELP_WARNINGCOLOR' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_WARNINGCOLORHOVER' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_WARNINGCOLORTEXT' => 'Lorem ipsum',
+    'ENDERECOCLIENTOX_HELP_WARNINGCOLOR' => '',
+    'ENDERECOCLIENTOX_HELP_WARNINGCOLORHOVER' => '',
+    'ENDERECOCLIENTOX_HELP_WARNINGCOLORTEXT' => '',
 
     'ENDERECOCLIENTOX_SETTINGS_SUCCESSCOLOR' => 'Color for success:',
-    'ENDERECOCLIENTOX_HELP_SUCCESSCOLOR' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_SUCCESSCOLORHOVER' => 'Lorem ipsum',
-    'ENDERECOCLIENTOX_HELP_SUCCESSCOLORTEXT' => 'Lorem ipsum',
+    'ENDERECOCLIENTOX_HELP_SUCCESSCOLOR' => '',
+    'ENDERECOCLIENTOX_HELP_SUCCESSCOLORHOVER' => '',
+    'ENDERECOCLIENTOX_HELP_SUCCESSCOLORTEXT' => '',
 );

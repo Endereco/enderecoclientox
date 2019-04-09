@@ -203,11 +203,16 @@ function StreetAutocomplete(config) {
                     }
                 });
 
-                if (!hasInput) {
-                    event = new Event('endereco.check');
-                    $self.inputElement.dispatchEvent(event);
+                if (0 < $self.predictions.length) {
+                    if (!hasInput) {
+                        event = new Event('endereco.check');
+                        $self.inputElement.dispatchEvent(event);
+                    } else {
+                        event = new Event('endereco.valid');
+                        $self.inputElement.dispatchEvent(event);
+                    }
                 } else {
-                    event = new Event('endereco.valid');
+                    event = new Event('endereco.clean');
                     $self.inputElement.dispatchEvent(event);
                 }
             }
@@ -245,7 +250,7 @@ function StreetAutocomplete(config) {
         if(4 === $self.connector.readyState && $self.dropdownDraw) {
             if ($self.connector.responseText && '' !== $self.connector.responseText) {
                 $data = JSON.parse($self.connector.responseText);
-                if ($data.result) {
+                if (undefined !== $data.result) {
                     $self.predictions = $data.result.predictions;
                 } else {
                     $self.predictions = [];

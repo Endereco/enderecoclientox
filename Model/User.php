@@ -32,7 +32,7 @@ namespace Endereco\OxidClient\Model;
   *            version 3 (GPLv3)
   * @link      https://www.endereco.de/
   */
-class User extends \OxidEsales\Eshop\Application\Model\User
+class User extends User_parent
 {
     /**
      * Method used for override.

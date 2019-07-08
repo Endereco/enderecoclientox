@@ -43,7 +43,8 @@ function CityNameAutocomplete(config) {
     // Create ul dropdown
     this.renderDropdown = function() {
         if(undefined !== $self.dropdown && undefined !== $self.dropdown) {
-            $self.dropdown.remove();
+            $self.dropdown.parentElement.removeChild($self.dropdown);
+            $self.dropdown = undefined;
         }
 
         $self.dropdown = undefined;
@@ -111,14 +112,14 @@ function CityNameAutocomplete(config) {
                 selectedCityName = this.getAttribute('data-city-name');
                 $self.inputElement.value = selectedCityName;
                 $self.inputElement.setAttribute('data-status', 'chosen');
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
 
                 selectedPostCode = this.getAttribute('data-post-code');
                 postCodeField = document.querySelector($self.config.secondaryInputSelectors.postCode);
                 if (selectedPostCode && postCodeField) {
                     postCodeField.value = selectedPostCode.trim();
-                    event = new Event('endereco.valid');
+                    var event = $self.createEvent('endereco.valid');
                     postCodeField.dispatchEvent(event);
                     postCodeField.setAttribute('data-status', 'chosen');
                 }
@@ -185,6 +186,17 @@ function CityNameAutocomplete(config) {
         }
     });
 
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
     this.inputElement.addEventListener('blur', function() {
         if ($self.mouseDownHappened) {
             $self.mouseDownHappened = false;
@@ -192,7 +204,8 @@ function CityNameAutocomplete(config) {
         }
         setTimeout(function() {
             if(undefined !== $self.dropdown && null !== $self.dropdown) {
-                $self.dropdown.remove();
+                $self.dropdown.parentElement.removeChild($self.dropdown);
+                $self.dropdown = undefined;
             }
 
             $self.dropdownDraw = false;
@@ -213,14 +226,14 @@ function CityNameAutocomplete(config) {
 
                 if (0 < $self.predictions.length) {
                     if (!hasInput) {
-                        event = new Event('endereco.check');
+                        var event = $self.createEvent('endereco.check');
                         $self.inputElement.dispatchEvent(event);
                     } else {
-                        event = new Event('endereco.valid');
+                        var event = $self.createEvent('endereco.valid');
                         $self.inputElement.dispatchEvent(event);
                     }
                 } else {
-                    event = new Event('endereco.clean');
+                    var event = $self.createEvent('endereco.clean');
                     $self.inputElement.dispatchEvent(event);
                 }
             }
@@ -244,7 +257,7 @@ function CityNameAutocomplete(config) {
             if($self.activeElementIndex >= 0 && $self.activeElementIndex <= $self.predictions.length) {
                 e.preventDefault();
                 $self.inputElement.value = $self.predictions[$self.activeElementIndex].cityName;
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
                 $self.inputElement.setAttribute('data-status', 'chosen');
 
@@ -252,7 +265,7 @@ function CityNameAutocomplete(config) {
                 postCodeField = document.querySelector($self.config.secondaryInputSelectors.postCode);
                 if (postCodeField && $self.predictions[$self.activeElementIndex].postCode && '' !== $self.predictions[$self.activeElementIndex].postCode) {
                     postCodeField.value = $self.predictions[$self.activeElementIndex].postCode.trim();
-                    event = new Event('endereco.valid');
+                    var event = $self.createEvent('endereco.valid');
                     postCodeField.dispatchEvent(event);
                     postCodeField.setAttribute('data-status', 'chosen');
                 }

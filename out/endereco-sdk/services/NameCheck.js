@@ -28,36 +28,46 @@ function NameCheck(config) {
 
     this.connector = new XMLHttpRequest();
 
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
     //// Functions
     this.checkSalutation = function() {
 
         if ('' === $self.salutationElement.value) {
-            event = new Event('endereco.clean');
+            var event = $self.createEvent('endereco.clean');
             $self.inputElement.dispatchEvent(event);
             return;
         }
 
         if ('M' === $self.gender) {
             if($self.mapping[$self.gender] !== $self.salutationElement.value) {
-                event = new Event('endereco.check');
+                var event = $self.createEvent('endereco.check');
                 $self.inputElement.dispatchEvent(event);
             } else {
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
             }
         } else if ('F' === $self.gender) {
             if($self.mapping[$self.gender] !== $self.salutationElement.value) {
-                event = new Event('endereco.check');
+                var event = $self.createEvent('endereco.check');
                 $self.inputElement.dispatchEvent(event);
             } else {
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
             }
         } else if ('N' === $self.gender) {
-            event = new Event('endereco.valid');
+            var event = $self.createEvent('endereco.valid');
             $self.inputElement.dispatchEvent(event);
         } else {
-            event = new Event('endereco.clean');
+            var event = $self.createEvent('endereco.clean');
             $self.inputElement.dispatchEvent(event);
         }
     }
@@ -139,7 +149,7 @@ function NameCheck(config) {
                 if (undefined !== $data.result) {
                     $self.gender = $data.result.gender;
                     $self.checkSalutation();
-                }                
+                }
             }
         }
 

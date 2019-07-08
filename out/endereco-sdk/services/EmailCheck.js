@@ -34,6 +34,18 @@ function EmailCheck(config) {
     }
 
 
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
+
     //// DOM modifications
 
     // Set mark
@@ -75,20 +87,20 @@ function EmailCheck(config) {
                 $data = JSON.parse($self.connector.responseText);
                 if (undefined !== $data.result) {
                     if ($data.result.status.includes('A1000')) {
-                        event = new Event('endereco.valid');
+                        var event = $self.createEvent('endereco.valid');
                         $self.inputElement.dispatchEvent(event);
                     }
 
                     if ($data.result.status.includes('A4000')) {
-                        event = new Event('endereco.check');
+                        var event = $self.createEvent('endereco.check');
                         $self.inputElement.dispatchEvent(event);
                     }
 
                     if ($data.result.status.includes('A5000')) {
-                        event = new Event('endereco.check');
+                        var event = $self.createEvent('endereco.check');
                         $self.inputElement.dispatchEvent(event);
                     }
-                }                
+                }
             }
         }
 

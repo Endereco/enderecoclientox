@@ -45,7 +45,8 @@ function StreetAutocomplete(config) {
     this.renderDropdown = function() {
 
         if(undefined !== $self.dropdown && undefined !== $self.dropdown) {
-            $self.dropdown.remove();
+            $self.dropdown.parentElement.removeChild($self.dropdown);
+            $self.dropdown = undefined;
         }
         var ul = document.createElement('ul');
         ul.style.display = 'none';
@@ -62,6 +63,17 @@ function StreetAutocomplete(config) {
         ul.setAttribute('class', 'endereco-dropdown')
         $self.dropdown = ul;
         $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
+    }
+
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
     }
 
     // Create dropdown elements
@@ -107,7 +119,7 @@ function StreetAutocomplete(config) {
                 selectedStreet = this.getAttribute('data-street');
                 $self.inputElement.value = selectedStreet;
                 $self.inputElement.setAttribute('data-status', 'chosen');
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
             });
 
@@ -185,7 +197,8 @@ function StreetAutocomplete(config) {
         }
         setTimeout(function() {
             if (undefined !== $self.dropdown) {
-                $self.dropdown.remove();
+                $self.dropdown.parentElement.removeChild($self.dropdown);
+                $self.dropdown = undefined;
             }
             $self.dropdown = undefined;
             $self.dropdownDraw = false;
@@ -205,14 +218,14 @@ function StreetAutocomplete(config) {
 
                 if (0 < $self.predictions.length) {
                     if (!hasInput) {
-                        event = new Event('endereco.check');
+                        var event = $self.createEvent('endereco.check');
                         $self.inputElement.dispatchEvent(event);
                     } else {
-                        event = new Event('endereco.valid');
+                        var event = $self.createEvent('endereco.valid');
                         $self.inputElement.dispatchEvent(event);
                     }
                 } else {
-                    event = new Event('endereco.clean');
+                    var event = $self.createEvent('endereco.clean');
                     $self.inputElement.dispatchEvent(event);
                 }
             }
@@ -238,7 +251,7 @@ function StreetAutocomplete(config) {
                 $self.inputElement.value = $self.predictions[$self.activeElementIndex].street;
                 $self.activeElementIndex = -1
                 $self.dropdown.style.display = 'none';
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
                 $self.inputElement.setAttribute('data-status', 'chosen');
             }

@@ -42,6 +42,30 @@ function AddressCheck(config) {
         }
     }
 
+    // Includes polyfill for IE
+    if (!Array.prototype.includes) {
+        Object.defineProperty(Array.prototype, "includes", {
+            enumerable: false,
+            value: function(obj) {
+                var newArr = this.filter(function(el) {
+                    return el == obj;
+                });
+                return newArr.length > 0;
+            }
+        });
+    }
+
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
     this.connector = new XMLHttpRequest();
 
     this.isAnyFocused = function() {
@@ -64,14 +88,14 @@ function AddressCheck(config) {
 
     this.removeOverlay = function() {
         if (undefined !== $self.overlay) {
-            $self.overlay.remove();
+            $self.overlay.parentElement.removeChild($self.overlay);
             $self.overlay = undefined;
         }
     }
 
     this.markSuccess = function() {
         // Mark all fields as valid, because its selected
-        event = new Event('endereco.valid');
+        var event = $self.createEvent('endereco.valid');
         $self.streetElement.dispatchEvent(event);
         $self.houseNumberElement.dispatchEvent(event);
         $self.postCodeElement.dispatchEvent(event);
@@ -363,7 +387,7 @@ function AddressCheck(config) {
                     if ($data.result.predictions.length > 1 || $data.result.status.includes('A1100')) {
                         $self.renderVariants();
                     }
-                }                
+                }
             }
         }
 

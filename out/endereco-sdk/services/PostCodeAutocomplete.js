@@ -42,7 +42,8 @@ function PostCodeAutocomplete(config) {
     // Create ul dropdown
     this.renderDropdown = function() {
         if(undefined !== $self.dropdown && undefined !== $self.dropdown) {
-            $self.dropdown.remove();
+            $self.dropdown.parentElement.removeChild($self.dropdown);
+            $self.dropdown = undefined;
         }
 
         $self.dropdown = undefined;
@@ -63,6 +64,18 @@ function PostCodeAutocomplete(config) {
         $self.dropdown = ul;
         $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
     }
+
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
 
     // Create dropdown elements
     this.renderDropdownElements = function() {
@@ -111,14 +124,14 @@ function PostCodeAutocomplete(config) {
                 selectedPostCode = this.getAttribute('data-post-code');
                 $self.inputElement.value = selectedPostCode;
                 $self.inputElement.setAttribute('data-status', 'chosen');
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
 
                 selectedCityName = this.getAttribute('data-city-name');
                 cityNameField = document.querySelector($self.config.secondaryInputSelectors.cityName);
                 if (selectedCityName && cityNameField) {
                     cityNameField.value = selectedCityName.trim();
-                    event = new Event('endereco.valid');
+                    var event = $self.createEvent('endereco.valid');
                     cityNameField.dispatchEvent(event);
                     cityNameField.setAttribute('data-status', 'chosen');
                 }
@@ -193,7 +206,8 @@ function PostCodeAutocomplete(config) {
         setTimeout(function() {
             if(undefined !== $self.dropdown) {
                 $self.dropdownDraw = false;
-                $self.dropdown.remove();
+                $self.dropdown.parentElement.removeChild($self.dropdown);
+                $self.dropdown = undefined;
             }
         }, 100);
     });
@@ -211,14 +225,14 @@ function PostCodeAutocomplete(config) {
 
                 if (0 < $self.predictions.length) {
                     if (!hasInput) {
-                        event = new Event('endereco.check');
+                        var event = $self.createEvent('endereco.check');
                         $self.inputElement.dispatchEvent(event);
                     } else {
-                        event = new Event('endereco.valid');
+                        var event = $self.createEvent('endereco.valid');
                         $self.inputElement.dispatchEvent(event);
                     }
                 } else {
-                    event = new Event('endereco.clean');
+                    var event = $self.createEvent('endereco.clean');
                     $self.inputElement.dispatchEvent(event);
                 }
             }
@@ -242,7 +256,7 @@ function PostCodeAutocomplete(config) {
             if($self.activeElementIndex >= 0 && $self.activeElementIndex <= $self.predictions.length) {
                 e.preventDefault();
                 $self.inputElement.value = $self.predictions[$self.activeElementIndex].postCode;
-                event = new Event('endereco.valid');
+                var event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
                 $self.inputElement.setAttribute('data-status', 'chosen');
 
@@ -252,7 +266,7 @@ function PostCodeAutocomplete(config) {
                 if (cityNameField && $self.predictions[$self.activeElementIndex].cityName && '' !== $self.predictions[$self.activeElementIndex].cityName) {
                     cityNameField.value = $self.predictions[$self.activeElementIndex].cityName.trim();
                     cityNameField.setAttribute('data-status', 'chosen');
-                    event = new Event('endereco.valid');
+                    var event = $self.createEvent('endereco.valid');
                     cityNameField.dispatchEvent(event);
                 }
 

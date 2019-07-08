@@ -59,7 +59,7 @@ function StatusIndicator(config) {
     // Render success icon
     this.renderSuccess = function() {
         if (undefined !== $self.statusIconElement) {
-            $self.statusIconElement.remove();
+            $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
         }
 
@@ -78,7 +78,7 @@ function StatusIndicator(config) {
     // Render success icon
     this.renderCheck = function() {
         if (undefined !== $self.statusIconElement) {
-            $self.statusIconElement.remove();
+            $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
         }
 
@@ -97,7 +97,7 @@ function StatusIndicator(config) {
     // Remove status icon
     this.renderClean = function() {
         if (undefined !== $self.statusIconElement) {
-            $self.statusIconElement.remove();
+            $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
         }
     }

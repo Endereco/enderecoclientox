@@ -35,6 +35,17 @@ function PrephoneCheck(config) {
         return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
     }
 
+    this.createEvent = function(eventName) {
+        var event;
+        if(typeof(Event) === 'function') {
+            event = new Event(eventName);
+        }else{
+            event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+        }
+        return event;
+    }
+
 
     //// DOM modifications
 
@@ -54,7 +65,7 @@ function PrephoneCheck(config) {
         $this = this;
 
         if ('' === $this.value.trim()) {
-            event = new Event('endereco.clean');
+            var event = $self.createEvent('endereco.clean');
             $self.inputElement.dispatchEvent(event);
             return;
         }
@@ -86,7 +97,7 @@ function PrephoneCheck(config) {
                 if (undefined !== $data.result) {
                     if ($data.result.status.includes('A1000')) {
                         $self.inputElement.value = $data.result.prephoneNumber;
-                        event = new Event('endereco.valid');
+                        var event = $self.createEvent('endereco.valid');
                         $self.inputElement.dispatchEvent(event);
                     }
                 }

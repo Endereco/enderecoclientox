@@ -1,24 +1,25 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
 function StreetAutocomplete(config) {
-
-    if (!document.querySelector(config.inputSelector)) {
-        return null;
-    }
-
     var $self  = this;
-    this.inputElement = document.querySelector(config.inputSelector);
-    this.config = config;
-    this.dropdown = undefined;
-    this.dropdownDraw = true;
-    this.predictions = [];
-    this.activeElementIndex = -1;
-    this.mouseDownHappened = false;
+
+    /**
+     * Combine object, IE 11 compatible.
+     */
+    this.mergeObjects = function(objects) {
+        return objects.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {})
+    };
+
     this.requestBody = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -31,39 +32,17 @@ function StreetAutocomplete(config) {
             "language": "de"
         }
     }
-
+    this.defaultConfig = {
+        'useWatcher': true,
+        'tid': 'not_set'
+    };
+    this.fieldsAreSet = false;
+    this.dirty = false;
+    this.originalInput;
+    this.blockInput = false;
+    this.lastInputError = true;
+    this.config = $self.mergeObjects([this.defaultConfig, config]);
     this.connector = new XMLHttpRequest();
-
-    //// Functions
-
-    // Check if the browser is chrome
-    this.isChrome = function() {
-        return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
-    }
-
-    // Create ul dropdown
-    this.renderDropdown = function() {
-
-        if(undefined !== $self.dropdown && undefined !== $self.dropdown) {
-            $self.dropdown.parentElement.removeChild($self.dropdown);
-            $self.dropdown = undefined;
-        }
-        var ul = document.createElement('ul');
-        ul.style.display = 'none';
-        ul.style.zIndex = '9001';
-        ul.style.borderRadius = '4px';
-        ul.style.backgroundColor = '#fff',
-        ul.style.border = '1px solid #dedede';
-        ul.style.listStyle = 'none';
-        ul.style.padding = '4px 4px';
-        ul.style.margin = 0;
-        ul.style.position = 'absolute';
-        ul.style.top = 4 + $self.inputElement.offsetTop + $self.inputElement.offsetHeight + 'px';
-        ul.style.left = $self.inputElement.offsetLeft + 'px';
-        ul.setAttribute('class', 'endereco-dropdown')
-        $self.dropdown = ul;
-        $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
-    }
 
     this.createEvent = function(eventName) {
         var event;
@@ -74,18 +53,149 @@ function StreetAutocomplete(config) {
             event.initEvent(eventName, true, true);
         }
         return event;
+    };
+
+    /**
+     * Helper function to update existing config, overwriting existing fields.
+     *
+     * @param newConfig
+     */
+    this.updateConfig = function(newConfig) {
+        $self.config = $self.mergeObjects([$self.config, newConfig]);
+    };
+
+    /**
+     * Checks if fields are set.
+     */
+    this.checkIfFieldsAreSet = function() {
+        var areFieldsSet = false;
+        if((null !== document.querySelector($self.config.inputSelector))) {
+            areFieldsSet = true;
+        }
+
+        if (!$self.fieldsAreSet && areFieldsSet) {
+            $self.dirty = true;
+            $self.fieldsAreSet = true;
+        } else if($self.fieldsAreSet && !areFieldsSet) {
+            $self.fieldsAreSet = false;
+        }
     }
 
-    // Create dropdown elements
-    this.renderDropdownElements = function() {
-        var li;
-        var input = $self.inputElement.value.trim();
-        var counter = 0;
+    /**
+     * Get predictions for the provided input.
+     */
+    this.getPredictions = function() {
+        $self.activeElementIndex = -1;
+        $self.originalInput = '';
+        return new Promise( function(resolve, reject) {
+            var countryCode = 'de';
+            var countryElement;
+            // On data receive
+            $self.connector.onreadystatechange = function() {
+                var $data = {};
+                if(4 === $self.connector.readyState) {
+                    if ($self.connector.responseText && '' !== $self.connector.responseText) {
+                        $data = JSON.parse($self.connector.responseText);
+                        if ($data.result) {
+                            $self.lastInputError = false;
+                            resolve($data);
+                        } else {
+                            $self.lastInputError = true;
+                            reject($data);
+                        }
+                    } else {
+                        $self.lastInputError = true;
+                        reject($data);
+                    }
+                }
+            };
 
-        // Remove all existing elements
-        while ($self.dropdown.hasChildNodes()) {
-            $self.dropdown.removeChild($self.dropdown.lastChild);
+            // Set request values.
+            if ($self.inputElement) {
+                $self.requestBody.params.street = $self.inputElement.value.trim();
+            }
+
+            // Set post code.
+            if (undefined !== $self.config.secondaryInputSelectors.postCode && '' !== document.querySelector($self.config.secondaryInputSelectors.postCode).value.trim()) {
+                $self.requestBody.params.postCode = document.querySelector($self.config.secondaryInputSelectors.postCode).value.trim();
+            }
+
+            // Set city name.
+            if (undefined !== $self.config.secondaryInputSelectors.cityName && '' !== document.querySelector($self.config.secondaryInputSelectors.cityName).value.trim()) {
+                $self.requestBody.params.cityName = document.querySelector($self.config.secondaryInputSelectors.cityName).value.trim();
+            }
+
+            // Set country.
+            countryElement = document.querySelector($self.config.secondaryInputSelectors.country);
+            if ((undefined !== countryElement) && (null !== countryElement)) {
+                countryCode = countryElement.options[countryElement.selectedIndex].getAttribute('data-code');
+                if ('' === countryCode) {
+                    countryCode = countryElement.options[countryElement.selectedIndex].value;
+                }
+                if ('' === countryCode) {
+                    countryCode = 'de';
+                }
+                $self.requestBody.params.country = countryCode;
+            }
+
+            // Set language
+            if (undefined !== $self.config.language && '' !== $self.config.language) {
+                $self.requestBody.params.language = $self.config.language;
+            }
+
+            $self.connector.open('POST', $self.config.endpoint, true);
+            $self.connector.setRequestHeader("Content-type", "application/json");
+            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
+            $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
+            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
+            $self.connector.send(JSON.stringify($self.requestBody));
+        });
+    }
+
+    /**
+     * Renders predictions in a dropdown.
+     */
+    this.renderDropdown = function() {
+        var ul;
+        var li;
+        var street;
+        var input;
+        if ('' === $self.originalInput) {
+            input = $self.inputElement.value.trim();
+            $self.originalInput = input;
+        } else {
+            input = $self.originalInput;
         }
+        var counter = 0;
+        var regEx;
+        var replaceMask;
+        var event;
+        var selectedStreet;
+
+        $self.removeDropdown();
+
+        if (0 === $self.predictions.length) {
+            return;
+        }
+
+        ul = document.createElement('ul');
+        ul.style.zIndex = '9001';
+        ul.style.borderRadius = '4px';
+        ul.style.backgroundColor = '#fff';
+        ul.style.border = '1px solid #dedede';
+        ul.style.listStyle = 'none';
+        ul.style.padding = '4px 4px';
+        ul.style.margin = 0;
+        ul.style.position = 'absolute';
+        ul.style.top = 4 + $self.inputElement.offsetTop + $self.inputElement.offsetHeight + 'px';
+        ul.style.left = $self.inputElement.offsetLeft + 'px';
+        ul.setAttribute('class', 'endereco-dropdown')
+        $self.dropdown = ul;
+        $self.inputElement.parentNode.insertBefore(ul, $self.inputElement.nextSibling);
+
+        ul.addEventListener('mouseout', function() {
+            $self.inputElement.value = $self.originalInput;
+        });
 
         // Iterate through list and create new elements
         $self.predictions.forEach( function(element) {
@@ -94,6 +204,7 @@ function StreetAutocomplete(config) {
             li.style.color = '#000';
             li.style.padding = '2px 4px';
             li.style.margin = '0';
+            li.setAttribute('data-index', counter);
             if (counter === $self.activeElementIndex) {
                 li.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
             } else {
@@ -101,180 +212,235 @@ function StreetAutocomplete(config) {
             }
             li.addEventListener('mouseover', function() {
                 this.style.backgroundColor = 'rgba(0, 137, 167, 0.25)';
+                $self.blockInput = true;
             });
 
             li.addEventListener('mouseout', function() {
                 this.style.backgroundColor =  'transparent';
+                $self.blockInput = false;
             });
 
-            var regEx = new RegExp('(' + input + ')', 'ig');
-            var replaceMask = '<mark style="background-color: transparent; padding: 0; margin: 0; font-weight: 700; color: ' +  $self.config.colors.secondaryColor + '">$1</mark>';
+            regEx = new RegExp('(' + input + ')', 'ig');
+            replaceMask = '<mark style="background-color: transparent; padding: 0; margin: 0; font-weight: 700; color: ' +  $self.config.colors.secondaryColor + '">$1</mark>';
             street = element.street.replace(regEx, replaceMask);
             li.innerHTML = street;
             li.setAttribute('data-street', element.street);
 
-			// Register event
-            li.addEventListener('mousedown', function() {
-                $self.mouseDownHappened = true;
+            // Register event
+            li.addEventListener('mouseover', function(mEvent) {
+                mEvent.preventDefault();
                 selectedStreet = this.getAttribute('data-street');
                 $self.inputElement.value = selectedStreet;
-                $self.inputElement.setAttribute('data-status', 'chosen');
-                var event = $self.createEvent('endereco.valid');
+                $self.activeElementIndex = this.getAttribute('data-index') * 1;
+            });
+
+            li.addEventListener( 'mousedown', function(mEvent) {
+                mEvent.preventDefault();
+
+                event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
+
+                $self.saveOriginal();
+                $self.removeDropdown();
             });
 
             $self.dropdown.appendChild(li);
 
             counter++;
         });
+    };
 
-        if ($self.predictions.length === 0) {
-            $self.dropdown.style.display = 'none';
+    /**
+     * Validate fields.
+     */
+    this.validate = function() {
+        var input = $self.inputElement.value.trim();
+        var event;
+        var includes = false;
+
+        if ($self.lastInputError) {
+            return;
+        }
+
+        $self.predictions.forEach( function(prediction) {
+            if (input === prediction.street) {
+                includes = true;
+            }
+        });
+
+        if (includes) {
+            event = $self.createEvent('endereco.valid');
+            $self.inputElement.dispatchEvent(event);
+        } else if('' === input) {
+            event = $self.createEvent('endereco.clean');
+            $self.inputElement.dispatchEvent(event);
         } else {
-            $self.dropdown.style.display = 'block';
+            event = $self.createEvent('endereco.check');
+            $self.inputElement.dispatchEvent(event);
         }
-    }
+    };
 
-    //// DOM modifications
-
-    // Set mark
-    this.inputElement.setAttribute('data-service', 'streetAutocomplete');
-    this.inputElement.setAttribute('data-status', 'instantiated');
-
-    // Disable browser autocomplete
-    if (this.isChrome()) {
-        this.inputElement.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
-    } else {
-        this.inputElement.setAttribute('autocomplete', 'off' );
-    }
-
-    //// Rendering
-
-    // Register events
-    this.inputElement.addEventListener('input', function() {
-        $this = this;
-        $self.activeElementIndex = -1;
-        $self.dropdownDraw = true;
-
-        if (true) {
-            $self.requestBody.params.street = $this.value.trim();
-            if (undefined !== $self.config.country && '' !== $self.config.country) {
-                $self.requestBody.params.country = $self.config.country;
-            }
-            if (undefined !== $self.config.secondaryInputSelectors.country && '' !== document.querySelector($self.config.secondaryInputSelectors.country).value.trim()) {
-                $self.requestBody.params.country = document.querySelector($self.config.secondaryInputSelectors.country).value.trim();
-            }
-            if (undefined !== $self.config.secondaryInputSelectors.postCode && '' !== document.querySelector($self.config.secondaryInputSelectors.postCode).value.trim()) {
-                $self.requestBody.params.postCode = document.querySelector($self.config.secondaryInputSelectors.postCode).value.trim();
-            }
-            if (undefined !== $self.config.secondaryInputSelectors.cityName && '' !== document.querySelector($self.config.secondaryInputSelectors.cityName).value.trim()) {
-                $self.requestBody.params.cityName = document.querySelector($self.config.secondaryInputSelectors.cityName).value.trim();
-            }
-            if (undefined !== $self.config.language && '' !== $self.config.language) {
-                $self.requestBody.params.language = $self.config.language;
-            }
-            if(undefined !== this.getAttribute('data-tid') && null !== this.getAttribute('data-tid')) {
-                tid = this.getAttribute('data-tid');
-            } else {
-                tid = 'not_set';
-            }
-            $self.connector.abort();
-            $self.inputElement.setAttribute('data-status', 'loading');
-            $self.connector.open('POST', $self.config.endpoint, true);
-            $self.connector.setRequestHeader("Content-type", "application/json");
-            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
-            $self.connector.setRequestHeader("X-Transaction-Id", tid);
-            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
-
-            $self.connector.send(JSON.stringify($self.requestBody));
-        }
-    });
-
-    this.inputElement.addEventListener('blur', function() {
-        if ($self.mouseDownHappened) {
-            $self.mouseDownHappened = false;
-            this.focus();
-        }
-        setTimeout(function() {
-            if (undefined !== $self.dropdown) {
-                $self.dropdown.parentElement.removeChild($self.dropdown);
-                $self.dropdown = undefined;
-            }
+    /**
+     * Removes dropdown from DOM.
+     */
+    this.removeDropdown = function() {
+        if (null !== $self.dropdown && undefined !== $self.dropdown ) {
+            $self.dropdown.parentElement.removeChild($self.dropdown);
             $self.dropdown = undefined;
-            $self.dropdownDraw = false;
-        }, 100);
-    });
+        }
+        $self.blockInput = false;
+    };
 
-    this.inputElement.addEventListener('change', function() {
+    /**
+     * Init postCodeAutocomplete.
+     */
+    this.init = function() {
 
-        setTimeout(function() {
-            if ('chosen' !== $self.inputElement.getAttribute('data-status')) {
-                hasInput = false;
-                $self.predictions.forEach( function(prediction) {
-                    if (prediction.street === $self.inputElement.value.trim()){
-                        hasInput = true;
+        try {
+            $self.inputElement = document.querySelector($self.config.inputSelector);
+            $self.dropdown = undefined;
+            $self.dropdownDraw = true;
+            $self.predictions = [];
+            $self.activeElementIndex = -1;
+
+            $self.saveOriginal();
+        } catch(e) {
+            console.log('Could not initiate StreetAutocomplete because of error.', e);
+        }
+
+        // Generate TID if accounting service is set.
+        if (window.accounting && ('not_set' === $self.config.tid)) {
+            $self.config.tid = window.accounting.generateTID();
+        }
+
+        // Disable browser autocomplete
+        if ($self.isChrome()) {
+            $self.inputElement.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
+        } else {
+            $self.inputElement.setAttribute('autocomplete', 'off' );
+        }
+
+        // Register events
+        $self.inputElement.addEventListener('input', function() {
+            var $this = this;
+            var acCall = $self.getPredictions();
+            $self.originalInput = this.value;
+            acCall.then( function($data) {
+                $self.predictions = $data.result.predictions;
+                if ($this === document.activeElement) {
+                    $self.renderDropdown();
+                }
+            }, function($data){console.log('Rejected with data:', $data)});
+        });
+
+        $self.inputElement.addEventListener('focus', function() {
+            var acCall = $self.getPredictions();
+            $self.saveOriginal();
+            acCall.then( function($data) {
+                $self.predictions = $data.result.predictions;
+                $self.validate();
+            }, function($data){console.log('Rejected with data:', $data)});
+        });
+
+        // Register blur event
+        $self.inputElement.addEventListener('blur', function() {
+            $self.removeDropdown();
+            $self.restoreOriginal();
+            $self.validate();
+        });
+
+        // Register mouse navigation
+        $self.inputElement.addEventListener('keydown', function(mEvent) {
+            var event;
+            if ('ArrowUp' === mEvent.key || 'Up' === mEvent.key) {
+                mEvent.preventDefault();
+
+                if (0 === $self.activeElementIndex) {
+                    $self.activeElementIndex = -1;
+                    $self.inputElement.value = $self.originalInput;
+                }
+
+                if (0 < $self.activeElementIndex) {
+                    $self.activeElementIndex--;
+                    // Prefill selection to input
+                    if (0 < $self.predictions.length) {
+                        $self.inputElement.value = $self.predictions[$self.activeElementIndex].street;
                     }
-                });
+                }
 
+                $self.renderDropdown();
+            }
+
+            if ('ArrowDown' === mEvent.key || 'Down' === mEvent.key) {
+                mEvent.preventDefault();
+                if ($self.activeElementIndex < ($self.predictions.length-1)) {
+                    $self.activeElementIndex++;
+                }
+
+                // Prefill selection to input
                 if (0 < $self.predictions.length) {
-                    if (!hasInput) {
-                        var event = $self.createEvent('endereco.check');
-                        $self.inputElement.dispatchEvent(event);
-                    } else {
-                        var event = $self.createEvent('endereco.valid');
-                        $self.inputElement.dispatchEvent(event);
-                    }
-                } else {
-                    var event = $self.createEvent('endereco.clean');
-                    $self.inputElement.dispatchEvent(event);
+                    $self.inputElement.value = $self.predictions[$self.activeElementIndex].street;
                 }
+
+                $self.renderDropdown();
             }
-        }, 1000);
-    });
 
-    this.inputElement.addEventListener('keydown', function(e) {
-        e = e || window.event;
-        if (40 == e.keyCode && $self.activeElementIndex < ($self.predictions.length-1)) {
-            e.preventDefault();
-            $self.activeElementIndex++;
-            $self.renderDropdown();
-            $self.renderDropdownElements();
+            if ('Enter' === mEvent.key || 'Enter' === mEvent.key) {
+                mEvent.preventDefault();
 
-        } else if(38 == e.keyCode && $self.activeElementIndex > 0) {
-            e.preventDefault();
-            $self.activeElementIndex--;
-            $self.renderDropdown();
-            $self.renderDropdownElements();
-        } else if(13 == e.keyCode) {
-            if($self.activeElementIndex >= 0 && $self.activeElementIndex <= $self.predictions.length) {
-                e.preventDefault();
-                $self.inputElement.value = $self.predictions[$self.activeElementIndex].street;
-                $self.activeElementIndex = -1
-                $self.dropdown.style.display = 'none';
-                var event = $self.createEvent('endereco.valid');
+                // If only one prediction.
+                if (1 === $self.predictions.length) {
+                    // Prefill selection to input
+                    $self.inputElement.value = $self.predictions[0].street;
+                }
+
+                // Then.
+                event = $self.createEvent('endereco.valid');
                 $self.inputElement.dispatchEvent(event);
-                $self.inputElement.setAttribute('data-status', 'chosen');
-            }
-        }
-    });
 
-    // On data receive
-    this.connector.onreadystatechange = function() {
-        if(4 === $self.connector.readyState && $self.dropdownDraw) {
-            if ($self.connector.responseText && '' !== $self.connector.responseText) {
-                $data = JSON.parse($self.connector.responseText);
-                if (undefined !== $data.result) {
-                    $self.predictions = $data.result.predictions;
-                } else {
-                    $self.predictions = [];
-                }
-            } else {
-                $self.predictions = [];
+                $self.saveOriginal();
+                $self.removeDropdown();
             }
-            $self.renderDropdown();
-            $self.renderDropdownElements();
-            $self.inputElement.setAttribute('data-status', 'list-rendered');
-        }
 
+            if ($self.blockInput) {
+                mEvent.preventDefault();
+                return;
+            }
+        });
+
+        $self.dirty = false;
+
+        console.log('StreetAutocomplete initiated.');
     }
+
+    /**
+     * Resotre original values.
+     */
+    this.restoreOriginal = function() {
+        $self.inputElement.value = $self.originalInput;
+    }
+
+    /**
+     * Save original state.
+     */
+    this.saveOriginal = function() {
+        $self.originalInput = $self.inputElement.value;
+    }
+
+    // Check if the browser is chrome
+    this.isChrome = function() {
+        return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
+    }
+
+    // Service loop.
+    setInterval( function() {
+
+        if ($self.config.useWatcher) {
+            $self.checkIfFieldsAreSet();
+        }
+
+        if ($self.dirty) {
+            $self.init();
+        }
+    }, 300);
 }

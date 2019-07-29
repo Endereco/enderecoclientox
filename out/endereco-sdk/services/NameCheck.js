@@ -1,21 +1,26 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
 function NameCheck(config) {
 
-    if (!document.querySelector(config.inputSelector)) {
-        return null;
-    }
-
     var $self  = this;
-    this.inputElement = document.querySelector(config.inputSelector);
-    this.salutationElement = document.querySelector(config.salutationElement);
+    /**
+     * Combine object, IE 11 compatible.
+     */
+    this.mergeObjects = function(objects) {
+        return objects.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {})
+    };
+
     this.mapping = config.mapping;
-    this.config = config;
     this.gender = 'X';
     this.requestBody = {
         "jsonrpc": "2.0",
@@ -24,10 +29,156 @@ function NameCheck(config) {
         "params": {
             "name": ""
         }
-    }
-
+    };
+    this.defaultConfig = {
+        'useWatcher': true,
+        'tid': 'not_set'
+    };
+    this.fieldsAreSet = false;
+    this.dirty = false;
+    this.config = $self.mergeObjects([this.defaultConfig, config]);
     this.connector = new XMLHttpRequest();
 
+
+    this.init = function() {
+        try {
+            $self.inputElement = document.querySelector($self.config.inputSelector);
+            $self.salutationElement = document.querySelector($self.config.salutationElement);
+        } catch(e) {
+            console.log('Could not initiate NameCheck because of error: ', e);
+        }
+
+        // Disable browser autocomplete
+        if (this.isChrome()) {
+            this.inputElement.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
+        } else {
+            this.inputElement.setAttribute('autocomplete', 'off' );
+        }
+
+        // Generate TID if accounting service is set.
+        if (window.accounting && ('not_set' === $self.config.tid)) {
+            $self.config.tid = window.accounting.generateTID();
+        }
+
+        $self.inputElement.addEventListener('change', function() {
+            var result = [],
+                separators = [' ', '-', '–', '_', '.'],
+                upperCase = true,
+                newName = '',
+                value;
+            $this = this;
+            value = $this.value.trim();
+
+            for(var i = 0; i < value.length; i++)
+            {
+                result.push(upperCase ? value[i].toUpperCase() : value[i]);
+                upperCase = false;
+                if(separators.indexOf(value[i]) >= 0)
+                    upperCase = true;
+            }
+
+            result = result.join('');
+            newName = result.replace(/\s{2,}/g, ' ').trim();
+
+            $this.value = newName;
+            $self.checkSalutation().then( function($data) {
+                $self.resetStatus($data);
+            });
+        });
+
+        $self.salutationElement.addEventListener('change', function() {
+            $self.checkSalutation().then( function($data) {
+                $self.resetStatus($data);
+            });
+        });
+
+        $self.dirty = false;
+        console.log('NameCheck initiated');
+    }
+
+    this.resetStatus = function($data) {
+        var event;
+        $self.gender = $data.result.gender;
+
+        if ('' === $self.salutationElement.value) {
+            event = $self.createEvent('endereco.clean');
+            $self.inputElement.dispatchEvent(event);
+            return;
+        }
+
+        if ('M' === $self.gender) {
+            if($self.mapping[$self.gender] !== $self.salutationElement.value) {
+                event = $self.createEvent('endereco.check');
+                $self.inputElement.dispatchEvent(event);
+            } else {
+                event = $self.createEvent('endereco.valid');
+                $self.inputElement.dispatchEvent(event);
+            }
+        } else if ('F' === $self.gender) {
+            if($self.mapping[$self.gender] !== $self.salutationElement.value) {
+                event = $self.createEvent('endereco.check');
+                $self.inputElement.dispatchEvent(event);
+            } else {
+                event = $self.createEvent('endereco.valid');
+                $self.inputElement.dispatchEvent(event);
+            }
+        } else if ('N' === $self.gender) {
+            event = $self.createEvent('endereco.valid');
+            $self.inputElement.dispatchEvent(event);
+        } else {
+            event = $self.createEvent('endereco.clean');
+            $self.inputElement.dispatchEvent(event);
+        }
+    }
+
+    //// Functions
+    this.checkSalutation = function() {
+        return new Promise( function(resolve, reject) {
+
+            $self.connector.onreadystatechange = function() {
+                var $data = {};
+                if(4 === $self.connector.readyState) {
+                    if ($self.connector.responseText && '' !== $self.connector.responseText) {
+                        try {
+                            $data = JSON.parse($self.connector.responseText);
+                        } catch(e) {
+                            console.log('Could not parse JSON', e);
+                            reject($data);
+                        }
+
+                        if ($data.result) {
+                            resolve($data);
+                        } else {
+                            reject($data);
+                        }
+                    } else {
+                        reject($data);
+                    }
+                }
+            }
+
+            $self.requestBody.params.name = $self.inputElement.value;
+            $self.connector.open('POST', $self.config.endpoint, true);
+            $self.connector.setRequestHeader("Content-type", "application/json");
+            $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
+            $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
+            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
+
+            $self.connector.send(JSON.stringify($self.requestBody));
+        });
+    }
+
+    // Check if the browser is chrome
+    this.isChrome = function() {
+        return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
+    }
+
+    /**
+     * Helper that creates an event that is compatible with IE 11.
+     *
+     * @param eventName
+     * @returns {Event}
+     */
     this.createEvent = function(eventName) {
         var event;
         if(typeof(Event) === 'function') {
@@ -38,37 +189,31 @@ function NameCheck(config) {
         }
         return event;
     }
-    //// Functions
-    this.checkSalutation = function() {
 
-        if ('' === $self.salutationElement.value) {
-            var event = $self.createEvent('endereco.clean');
-            $self.inputElement.dispatchEvent(event);
-            return;
+    /**
+     * Helper function to update existing config, overwriting existing fields.
+     *
+     * @param newConfig
+     */
+    this.updateConfig = function(newConfig) {
+        $self.config = $self.mergeObjects([$self.config, newConfig]);
+    }
+
+    /**
+     * Checks if fields are set.
+     */
+    this.checkIfFieldsAreSet = function() {
+        var areFieldsSet = false;
+        if((null !== document.querySelector(config.inputSelector))
+            && (null !== document.querySelector(config.salutationElement))) {
+            areFieldsSet = true;
         }
 
-        if ('M' === $self.gender) {
-            if($self.mapping[$self.gender] !== $self.salutationElement.value) {
-                var event = $self.createEvent('endereco.check');
-                $self.inputElement.dispatchEvent(event);
-            } else {
-                var event = $self.createEvent('endereco.valid');
-                $self.inputElement.dispatchEvent(event);
-            }
-        } else if ('F' === $self.gender) {
-            if($self.mapping[$self.gender] !== $self.salutationElement.value) {
-                var event = $self.createEvent('endereco.check');
-                $self.inputElement.dispatchEvent(event);
-            } else {
-                var event = $self.createEvent('endereco.valid');
-                $self.inputElement.dispatchEvent(event);
-            }
-        } else if ('N' === $self.gender) {
-            var event = $self.createEvent('endereco.valid');
-            $self.inputElement.dispatchEvent(event);
-        } else {
-            var event = $self.createEvent('endereco.clean');
-            $self.inputElement.dispatchEvent(event);
+        if (!$self.fieldsAreSet && areFieldsSet) {
+            $self.dirty = true;
+            $self.fieldsAreSet = true;
+        } else if($self.fieldsAreSet && !areFieldsSet) {
+            $self.fieldsAreSet = false;
         }
     }
 
@@ -77,81 +222,15 @@ function NameCheck(config) {
         return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
     }
 
+    // Service loop.
+    setInterval( function() {
 
-    //// DOM modifications
-
-    // Set mark
-    this.inputElement.setAttribute('data-service', 'nameCheck');
-    this.inputElement.setAttribute('data-status', 'instantiated');
-
-    // Disable browser autocomplete
-    if (this.isChrome()) {
-        this.inputElement.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
-    } else {
-        this.inputElement.setAttribute('autocomplete', 'off' );
-    }
-
-    this.recheck = function() {
-        $self.requestBody.params.name = $self.inputElement.value;
-
-        if(undefined !== $self.inputElement.getAttribute('data-tid') && null !== $self.inputElement.getAttribute('data-tid')) {
-            tid = $self.inputElement.getAttribute('data-tid');
-        } else {
-            tid = 'not_set';
-        }
-        $self.connector.abort();
-        $self.inputElement.setAttribute('data-status', 'loading');
-        $self.connector.open('POST', $self.config.endpoint, true);
-        $self.connector.setRequestHeader("Content-type", "application/json");
-        $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
-        $self.connector.setRequestHeader("X-Transaction-Id", tid);
-        $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
-
-        $self.connector.send(JSON.stringify($self.requestBody));
-    }
-
-    //// Rendering
-    this.inputElement.addEventListener('change', function() {
-        $this = this;
-
-
-        value = $this.value.trim();
-        var result = [],
-            separators = [' ', '-', '–', '_', '.'],
-            upperCase = true;
-
-        for(var i = 0; i < value.length; i++)
-        {
-            result.push(upperCase ? value[i].toUpperCase() : value[i]);
-            upperCase = false;
-            if(separators.indexOf(value[i]) >= 0)
-                upperCase = true;
+        if ($self.config.useWatcher) {
+            $self.checkIfFieldsAreSet();
         }
 
-        result = result.join('');
-        newName = result.replace(/\s{2,}/g, ' ').trim();
-
-        $this.value = newName;
-
-        $self.recheck();
-    });
-
-    this.salutationElement.addEventListener('change', function() {
-        $self.recheck();
-    })
-
-
-    // On data receive
-    this.connector.onreadystatechange = function() {
-        if(4 === $self.connector.readyState) {
-            if ($self.connector.responseText && '' !== $self.connector.responseText) {
-                $data = JSON.parse($self.connector.responseText);
-                if (undefined !== $data.result) {
-                    $self.gender = $data.result.gender;
-                    $self.checkSalutation();
-                }
-            }
+        if ($self.dirty) {
+            $self.init();
         }
-
-    }
+    }, 300);
 }

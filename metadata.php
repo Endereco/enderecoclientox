@@ -23,7 +23,7 @@ $aModule = array(
         'de' => 'Adressvalidierung + Korrekturvorschläge für Webshops',
     ),
     'thumbnail'    => 'endereco.png',
-    'version'      => '3.0.2',
+    'version'      => '3.1',
     'author'       => 'endereco',
     'email'        => 'info@endereco.de',
     'url'          => 'www.endereco.de',
@@ -33,6 +33,8 @@ $aModule = array(
     ),
     'controllers'  => array(
         'enderecocontroller' => \Endereco\OxidClient\Controller\FrontendController::class,
+        'enderecocountrycontroller' =>  \Endereco\OxidClient\Controller\FrontendCountryController::class,
+        'enderecoconnectioncontroller' => \Endereco\OxidClient\Controller\FrontendConnectionController::class,
         'enderecoincludewidget' => \Endereco\OxidClient\Component\Widget\IncludeWidget::class,
         'enderecosettings' => \Endereco\OxidClient\Controller\Admin\Settings::class,
     ),

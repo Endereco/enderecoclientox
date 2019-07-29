@@ -57,9 +57,18 @@
                 <td>
                     <select type="text" class="editinput" name="cstrs[sSERVICEURL]">
                         <option value="https://endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE"}])</option>
+                        <option value="https://staging.endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://staging.endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://staging.endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING"}])</option>
                         <option value="https://sandbox.endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://sandbox.endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://sandbox.endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX"}])</option>
                     </select>
                     &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_SOURCE" }]
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_KEEP"}]
+                </td>
+                <td>
+                    <input type="checkbox" class="editinput" name="cstrs[bKEEPSETTINGS]" value="1" [{if $cstrs.bKEEPSETTINGS == 1}]checked="checked"[{/if}]>
                 </td>
             </tr>
         </table>

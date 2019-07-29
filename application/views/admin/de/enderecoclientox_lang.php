@@ -25,6 +25,7 @@ $aLang = array(
 
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE1' => 'Allgemeine Einstellungen:',
     'ENDERECOCLIENTOX_SETTINGS_API_KEY' => 'API-Key:',
+    'ENDERECOCLIENTOX_SETTINGS_KEEP' => 'Einstellungen nach Deaktivierung behalten',
     'ENDERECOCLIENTOX_HELP_API_KEY' => 'Trage hier den API-Key, den du von Endereco erhalten hast, ein.',
     'ENDERECOCLIENTOX_SETTINGS_STATUS' => 'Status:',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_OK' => 'Ok',
@@ -36,6 +37,7 @@ $aLang = array(
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT' => 'Service-Endpunkt:',
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE' => 'Live-System',
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX' => 'Sandbox-System',
+    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING' => 'Aktuelles Entwicklungs-System',
     'ENDERECOCLIENTOX_HELP_SOURCE' => 'Dir stehen zwei Systeme zur Verfügung, Live und Sandbox. Tests auf dem Sandbox System sind kostenfrei. Die zurückgelieferten Daten haben keine Anspruch auf Korrektheit.',
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE2' => 'Dienste (aktivieren/deaktivieren):',
 

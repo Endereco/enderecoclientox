@@ -1,26 +1,16 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
-function Accounting(config) {
+function Accounting() {
     var $self  = this;
-    this.groups = config.groups;
-    this.config = config;
-    this.connector = new XMLHttpRequest();
-    this.globalTimeout = undefined;
-    this.generateTID = function(groupName) {
-        prename = $self.randomNumber + '_' + groupName + '_' + $self.hashCode(window.location.href);
+
+    this.generateTID = function() {
+        prename = Math.random().toString(36).substring(2) + Date.now() + '_' + $self.hashCode(window.location.href);
         return btoa($self.caesarCipher(prename, 5));
-    }
-    this.randomNumber = Math.random().toString(36).substring(2) + Date.now();
-    this.hasAnyChanged = false;
-    this.requestBody = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "doAccounting"
     }
 
     this.caesarCipher = function(string, offset) {
@@ -46,51 +36,4 @@ function Accounting(config) {
         }
         return hash;
     }
-
-    // For each field in each group generate tid
-    this.groups.forEach( function(group){
-        tid = $self.generateTID(group.name);
-        group.invoiceable = false;
-
-        if ('' === group.formSelector || undefined === group.formSelector) {
-            formElement = undefined;
-        } else {
-            formElement = document.querySelector(group.formSelector);
-        }
-
-        if(undefined !== formElement && null !== formElement) {
-            formElement.addEventListener('submit', function(e) {
-                if (group.invoiceable && group.validationFunction(formElement) === true) {
-                    e.preventDefault();
-                    $self.connector.open('POST', $self.config.endpoint, true);
-                    $self.connector.setRequestHeader("Content-type", "application/json");
-                    $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
-                    $self.connector.setRequestHeader("X-Transaction-Id", tid);
-                    $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
-                    $self.connector.send(JSON.stringify($self.requestBody));
-                    group.invoiceable = false;
-
-                    if (undefined !== $self.globalTimeout) {
-                        clearTimeout($self.globalTimeout);
-                    }
-
-                    $self.globalTimeout = setTimeout(function() {
-                        if(group.validationFunction(formElement) === true) {
-                            formElement.submit();
-                        }
-                    }, 1000);
-                }
-            });
-        }
-
-        group.fieldsSelectors.forEach( function(selector){
-            if (document.querySelector(selector)) {
-                element = document.querySelector(selector);
-                element.setAttribute('data-tid', tid);
-                element.addEventListener('change', function() {
-                    group.invoiceable = true;
-                });
-            }
-        });
-    });
 }

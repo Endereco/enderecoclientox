@@ -1,36 +1,95 @@
 /**
  * Endereco SDK.
  *
- * @author Ilja Weber <ilja.weber@mobilemjo.de>
+ * @author Ilja Weber <ilja@endereco.de>
  * @copyright 2019 mobilemojo – Apps & eCommerce UG (haftungsbeschränkt) & Co. KG
  * {@link https://endereco.de}
  */
 function StatusIndicator(config) {
-
-    if (!document.querySelector(config.inputSelector) ||
-        !document.querySelector(config.displaySelector)
-    ) {
-        return null;
-    }
-
     var $self  = this;
-    this.inputElement = document.querySelector(config.inputSelector);
-    this.displayElement = document.querySelector(config.displaySelector);
-    this.config = config;
+
+    /**
+     * Combine object, IE 11 compatible.
+     */
+    this.mergeObjects = function(objects) {
+        return objects.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {})
+    };
+
     this.statusIconElement = undefined;
     this.renderTimeout = undefined;
-    this.defaultBorderColor = this.displayElement.style.borderColor;
 
-    window.addEventListener('resize', function() {
-        if (undefined !== $self.renderTimeout) {
-            clearTimeout($self.renderTimeout)
+    this.defaultConfig = {
+        'useWatcher': true,
+        'showIcons': false
+    };
+    this.fieldsAreSet = false;
+    this.dirty = false;
+    this.config = $self.mergeObjects([this.defaultConfig, config]);
+
+
+    this.init = function() {
+        try {
+            $self.inputElement = document.querySelector($self.config.inputSelector);
+            $self.displayElement = document.querySelector($self.config.displaySelector);
+            $self.defaultBorderColor = $self.displayElement.style.borderColor;
+
+            //// Listen to events
+            $self.inputElement.addEventListener('endereco.valid', function() {
+                $self.displayElement.style.borderColor = $self.config.colors.successColor;
+                if ($self.config.showIcons) {
+                    $self.renderSuccess();
+                }
+            });
+
+            $self.inputElement.addEventListener('endereco.check', function() {
+                $self.displayElement.style.borderColor = $self.config.colors.warningColor;
+                if ($self.config.showIcons) {
+                    $self.renderCheck();
+                }
+            });
+
+            $self.inputElement.addEventListener('endereco.loading', function() {
+                $self.displayElement.style.borderColor = $self.defaultBorderColor;
+                if ($self.config.showIcons) {
+                    $self.renderClean();
+                }
+            });
+
+            $self.inputElement.addEventListener('endereco.clean', function() {
+                $self.displayElement.style.borderColor = $self.defaultBorderColor;
+
+                if ($self.config.showIcons) {
+                    $self.renderClean();;
+                }
+            });
+
+        } catch(e) {
+            console.log('Could not initiate StatusIndicator because of error', e);
+            return;
         }
-        $self.renderTimeout = setTimeout( function() {
-            $self.calculatePosition();
-        }, 200);
-    });
+
+        window.addEventListener('resize', function() {
+            if (undefined !== $self.renderTimeout) {
+                clearTimeout($self.renderTimeout)
+            }
+            $self.renderTimeout = setTimeout( function() {
+                $self.calculatePosition();
+            }, 200);
+        });
+
+        $self.dirty = false;
+        console.log('StatusIndicator initiated');
+    }
 
     this.calculatePosition = function() {
+        if($self.dirty) {
+            return;
+        }
         var position = {
             top: 0,
             left: 0
@@ -54,10 +113,13 @@ function StatusIndicator(config) {
         }
 
         return position;
-    }
+    };
 
     // Render success icon
     this.renderSuccess = function() {
+        if($self.dirty) {
+            return;
+        }
         if (undefined !== $self.statusIconElement) {
             $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
@@ -77,6 +139,9 @@ function StatusIndicator(config) {
 
     // Render success icon
     this.renderCheck = function() {
+        if($self.dirty) {
+            return;
+        }
         if (undefined !== $self.statusIconElement) {
             $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
@@ -96,30 +161,56 @@ function StatusIndicator(config) {
 
     // Remove status icon
     this.renderClean = function() {
+        if($self.dirty) {
+            return;
+        }
         if (undefined !== $self.statusIconElement) {
             $self.statusIconElement.parentElement.removeChild($self.statusIconElement);
             $self.statusIconElement = undefined;
         }
     }
 
-    //// Listen to events
-    this.inputElement.addEventListener('endereco.valid', function() {
-        $self.displayElement.style.borderColor = $self.config.colors.successColor;
-        $self.renderSuccess();
-    });
+    /**
+     * Helper function to update existing config, overwriting existing fields.
+     *
+     * @param newConfig
+     */
+    this.updateConfig = function(newConfig) {
+        $self.config = $self.mergeObjects([$self.config, newConfig]);
+    };
 
-    this.inputElement.addEventListener('endereco.check', function() {
-        $self.displayElement.style.borderColor = $self.config.colors.warningColor;
-        $self.renderCheck();
-    });
+    /**
+     * Checks if fields are set.
+     */
+    this.checkIfFieldsAreSet = function() {
+        var areFieldsSet = false;
+        if((null !== document.querySelector(config.inputSelector))
+            && (null !== document.querySelector(config.displaySelector))) {
+            areFieldsSet = true;
+        }
 
-    this.inputElement.addEventListener('endereco.loading', function() {
-        $self.displayElement.style.borderColor = $self.defaultBorderColor;
-        $self.renderClean();
-    });
+        if (!$self.fieldsAreSet && areFieldsSet) {
+            $self.dirty = true;
+            $self.fieldsAreSet = true;
+        } else if($self.fieldsAreSet && !areFieldsSet) {
+            $self.fieldsAreSet = false;
+        }
+    };
 
-    this.inputElement.addEventListener('endereco.clean', function() {
-        $self.displayElement.style.borderColor = $self.defaultBorderColor;
-        $self.renderClean();
-    });
+    // Check if the browser is chrome
+    this.isChrome = function() {
+        return /chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) );
+    };
+
+    // Service loop.
+    setInterval( function() {
+
+        if ($self.config.useWatcher) {
+            $self.checkIfFieldsAreSet();
+        }
+
+        if ($self.dirty) {
+            $self.init();
+        }
+    }, 300);
 }

@@ -25,6 +25,7 @@ $aLang = array(
 
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE1' => 'General settings:',
     'ENDERECOCLIENTOX_SETTINGS_API_KEY' => 'API-Key:',
+    'ENDERECOCLIENTOX_SETTINGS_KEEP' => 'Keep settings after deactivation',
     'ENDERECOCLIENTOX_HELP_API_KEY' => 'API-Key is a passcode, you receive from your Endereco service provider.',
     'ENDERECOCLIENTOX_SETTINGS_STATUS' => 'Status:',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_OK' => 'Ok',
@@ -37,6 +38,7 @@ $aLang = array(
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT' => 'Service Endpoint:',
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE' => 'Live System',
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX' => 'Testing System',
+    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING' => ' DEV System',
     'ENDERECOCLIENTOX_HELP_SOURCE' => 'There are two systems available to you, Live and Testing. The changes that are applied to Live system will affect your eCommerce platform. Make sure to perform tests in the testing system first.',
 
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE2' => 'Services (activate/deactivate):',

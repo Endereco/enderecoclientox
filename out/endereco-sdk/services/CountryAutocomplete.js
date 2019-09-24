@@ -35,6 +35,7 @@ function CountryAutocomplete(config) {
     };
     this.fieldsAreSet = false;
     this.dirty = false;
+    this.ready = false;
     this.config = $self.mergeObjects([this.defaultConfig, config]);
     this.connector = new XMLHttpRequest();
 
@@ -122,6 +123,7 @@ function CountryAutocomplete(config) {
         for (var i = 0; i < options.length; i++) {
             options[i].setAttribute('data-code', countryCodes[i]);
         }
+        this.ready = true;
     }
 
     // Service loop.

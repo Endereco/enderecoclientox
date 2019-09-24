@@ -49,16 +49,21 @@ class FrontendConnectionController extends \OxidEsales\Eshop\Application\Control
         $data = array(
             'jsonrpc' => '2.0',
             'id' => 1,
-            'method' => 'nameCheck',
-            'params' => array(
-                'name' => 'Brunhilde'
-            )
+            'method' => 'readinessCheck',
         );
         $data_string = json_encode($data);
 
         $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
         $tried_http = false;
         $result = '';
+
+        // (Shop Version; active Theme)
+        $oTheme = oxNew(\OxidEsales\Eshop\Core\Theme::class);
+        $activeTheme = $oTheme->getActiveThemeId();
+        $shopVersion = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
+        $shopEdition = \OxidEsales\Facts\Facts::getEdition();
+        $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
+        $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
 
         while (true) {
             $ch = curl_init($api_url);
@@ -73,8 +78,9 @@ class FrontendConnectionController extends \OxidEsales\Eshop\Application\Control
                 array(
                     'Content-Type: application/json',
                     'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
-                    'X-Transaction-Id: ' . 'connection_check',
-                    'X-Transaction-Referer: ' . 'endereco_settings_page',
+                    'X-Transaction-Id: ' . 'not_required',
+                    'X-Transaction-Referer: ' . $_SERVER['HTTP_X_TRANSACTION_REFERER'],
+                    'X-Agent: ' . $shopInfo,
                     'Content-Length: ' . strlen($data_string))
             );
 

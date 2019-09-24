@@ -15,6 +15,8 @@
 
 namespace Endereco\OxidClient\Controller;
 
+use Endereco\OxidClient\Model\Accounting;
+
 /**
  * FrontendController
  *
@@ -42,6 +44,7 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
      */
     public function render()
     {
+        session_write_close();
         $oConfig = $this->getConfig();
         $sOxId = $oConfig->getShopId();
 
@@ -80,8 +83,8 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 2 seconds
-            curl_setopt($ch, CURLOPT_TIMEOUT, 2); // 2 seconds
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6); // 6 seconds
+            curl_setopt($ch, CURLOPT_TIMEOUT, 6); // 6 seconds
             curl_setopt(
                 $ch,
                 CURLOPT_HTTPHEADER,
@@ -121,8 +124,12 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
         if ('' !== $result) {
             $resultData = json_decode($result, true);
 
+            if (isset($resultData['cmd']) && isset($resultData['cmd']['use_tid'])) {
+                $tid = $resultData['cmd']['use_tid'];
+            }
+
             if (isset($resultData['result'])) {
-                \Endereco\OxidClient\Model\Accounting::countTransaction($tid);
+                Accounting::countTransaction($tid);
             }
         }
 

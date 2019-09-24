@@ -58,7 +58,6 @@
                     <select type="text" class="editinput" name="cstrs[sSERVICEURL]">
                         <option value="https://endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE"}])</option>
                         <option value="https://staging.endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://staging.endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://staging.endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING"}])</option>
-                        <option value="https://sandbox.endereco-service.de/rpc/v1" [{if $cstrs.sSERVICEURL == 'https://sandbox.endereco-service.de/rpc/v1'}]selected="selected"[{/if}]>https://sandbox.endereco-service.de/rpc/v1 ([{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX"}])</option>
                     </select>
                     &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_SOURCE" }]
                 </td>
@@ -77,72 +76,118 @@
     <fieldset>
         <legend><strong>[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ENDPOINT"}]</strong></legend>
         <table class="ettm-table">
+            <!-- START Status Indicator . -->
             <tr>
                 <td>
                     [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_STATUSINDICATOR"}]
                 </td>
                 <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bSTATUSINDICATOR]" value="1" [{if $cstrs.bSTATUSINDICATOR == 1}]checked="checked"[{/if}]>
+                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bSTATUSINDICATOR]" id="endereco-statusindicator" value="1" [{if $cstrs.bSTATUSINDICATOR == 1}]checked="checked"[{/if}]>
                     &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_STATUSINDICATOR" }]
                 </td>
             </tr>
-            <tr>
+            <tr [{if $cstrs.bSTATUSINDICATOR != 1}]style="display:none;"[{/if}] class="endereco-colors">
                 <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_POSTCODEA"}]
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_SUCCESSCOLOR"}]
                 </td>
                 <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bPOSTCODEAUTOCOMPLETE]" value="1" [{if $cstrs.bPOSTCODEAUTOCOMPLETE == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_POSTCODEAUTOCOMPLETE" }]
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_CITYNAMEA"}]
-                </td>
-                <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bCITYNAMEAUTOCOMPLETE]" value="1" [{if $cstrs.bCITYNAMEAUTOCOMPLETE == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_CITYNAMEAUTOCOMPLETE" }]
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSUCCESSCOLOR]" value="[{$cstrs.sSUCCESSCOLOR}]">
                 </td>
             </tr>
-            <tr>
+            <tr [{if $cstrs.bSTATUSINDICATOR != 1}]style="display:none;"[{/if}] class="endereco-colors">
                 <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_STREETA"}]
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_WARNINGCOLOR"}]
                 </td>
                 <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bSTREETAUTOCOMPLETE]" value="1" [{if $cstrs.bSTREETAUTOCOMPLETE == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_STREETAUTOCOMPLETE" }]
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_EMAILCHECK"}]
-                </td>
-                <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bEMAILCHECK]" value="1" [{if $cstrs.bEMAILCHECK == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_EMAILCHECK" }]
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sWARNINGCOLOR]" value="[{$cstrs.sWARNINGCOLOR}]">
                 </td>
             </tr>
+            <!-- END Status Indicator -->
+
+            <!-- START Addresses Service -->
             <tr>
                 <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_NAMECHECK"}]
+                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ADDRESSSERVICE"}]
                 </td>
                 <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bNAMECHECK]" value="1" [{if $cstrs.bNAMECHECK == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_NAMECHECK" }]
+                    <input type="checkbox" id="endereco-adressservices" class="editinput" size="60" maxlength="255" name="cstrs[bADDRESSSERVICE]" value="1" [{if $cstrs.bADDRESSSERVICE == 1}]checked="checked"[{/if}]>
+                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_ADDRESSSERVICE" }]
                 </td>
             </tr>
+            <tr [{if $cstrs.bADDRESSSERVICE != 1}]style="display:none;"[{/if}] class="endereco-adressservicesext">
+                <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ALWAYSCHECK"}]
+                </td>
+                <td>
+                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bADDRESSALWAYSCHECK]" value="1" [{if $cstrs.bADDRESSALWAYSCHECK == 1}]checked="checked"[{/if}]>
+                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_ALWAYSCHECK" }]
+                </td>
+            </tr>
+            <!-- deactivated untill its possible to define dropdown colorvalue for autocomplete services -->
+            <!--<tr [{if $cstrs.bADDRESSSERVICE != 1}]style="display:none;"[{/if}] class="endereco-adressservicesext">
+                <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR1"}]
+                </td>
+                <td>
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sADDRESSSERVCOLOR1]" value="[{$cstrs.sADDRESSSERVCOLOR1}]">
+                </td>
+            </tr>-->
+            <tr [{if $cstrs.bADDRESSSERVICE != 1}]style="display:none;"[{/if}] class="endereco-adressservicesext">
+                <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR2"}]
+                </td>
+                <td>
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sADDRESSSERVCOLOR2]" value="[{$cstrs.sADDRESSSERVCOLOR2}]">
+                </td>
+            </tr>
+            <tr [{if $cstrs.bADDRESSSERVICE != 1}]style="display:none;"[{/if}] class="endereco-adressservicesext">
+                <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR3"}]
+                </td>
+                <td>
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sADDRESSSERVCOLOR31]" value="[{$cstrs.sADDRESSSERVCOLOR31}]">/
+                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sADDRESSSERVCOLOR32]" value="[{$cstrs.sADDRESSSERVCOLOR32}]">
+                </td>
+            </tr>
+            <!-- END Addresses Service -->
+
+            <!-- START Email Service -->
             <tr>
                 <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_PREPHONECHECK"}]
+                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_EMAILSERVICE"}]
                 </td>
                 <td>
-                    <input id="endereco-prephone" type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bPREPHONECHECK]" value="1" [{if $cstrs.bPREPHONECHECK == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_PREPHONECHECK" }]
+                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bEMAILSERVICE]" value="1" [{if $cstrs.bEMAILSERVICE == 1}]checked="checked"[{/if}]>
+                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_EMAILSERVICE" }]
                 </td>
             </tr>
-            <tr id="endereco-prephoneformat" [{if $cstrs.bPREPHONECHECK != '1'}] style="display:none"[{/if}]>
+            <!-- END Addresses Service -->
+
+            <!-- START Name Service -->
+            <tr>
                 <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT"}]
+                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_NAMESERVICE"}]
+                </td>
+                <td>
+                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bNAMESERVICE]" value="1" [{if $cstrs.bNAMESERVICE == 1}]checked="checked"[{/if}]>
+                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_NAMESERVICE" }]
+                </td>
+            </tr>
+            <!-- END Name Service -->
+
+            <!-- START Phone Service -->
+            <tr>
+                <td>
+                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_PHONESERVICE"}]
+                </td>
+                <td>
+                    <input type="checkbox" id="endereco-phoneservice" class="editinput" size="60" maxlength="255" name="cstrs[bPHONESERVICE]" value="1" [{if $cstrs.bPHONESERVICE == 1}]checked="checked"[{/if}]>
+                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_PHONESERVICE" }]
+                </td>
+            </tr>
+            <tr [{if $cstrs.bPHONESERVICE != 1}]style="display:none;"[{/if}] class="endereco-phoneserviceformat">
+                <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT"}]
                 </td>
                 <td>
                     <select  type="text" class="editinput" name="cstrs[sPHONEFORMAT]">
@@ -160,97 +205,54 @@
                     &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_PHONEFORMAT" }]
                 </td>
             </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_ADDRESSCHECK"}]
-                </td>
-                <td>
-                    <input type="checkbox" class="editinput" size="60" maxlength="255" name="cstrs[bADDRESSCHECK]" value="1" [{if $cstrs.bADDRESSCHECK == 1}]checked="checked"[{/if}]>
-                    &nbsp;[{ oxinputhelp ident="ENDERECOCLIENTOX_HELP_ADDRESSCHECK" }]
-                </td>
-            </tr>
+            <!-- END Phone Service -->
         </table>
     </fieldset>
-
     <script>
-        var prephonefield = document.getElementById('endereco-prephone');
-        var prephoneext = document.getElementById('endereco-prephoneformat');
+        var statusfield = document.getElementById('endereco-statusindicator');
+        var statusext = document.querySelectorAll('.endereco-colors');
+        statusfield.addEventListener('change', function() {
+            if (this.checked) {
+                statusext.forEach( function(element) {
+                    element.style.display = 'table-row';
+                });
+            } else {
+                statusext.forEach( function(element) {
+                    element.style.display = 'none';
+                });
+            }
+        });
+    </script>
+    <script>
+        var prephonefield = document.getElementById('endereco-phoneservice');
+        var prephoneext = document.querySelectorAll('.endereco-phoneserviceformat');
         prephonefield.addEventListener('change', function() {
             if (this.checked) {
-                prephoneext.style.display = 'table-row';
+                prephoneext.forEach( function(element) {
+                    element.style.display = 'table-row';
+                });
             } else {
-                prephoneext.style.display = 'none';
+                prephoneext.forEach( function(element) {
+                    element.style.display = 'none';
+                });
+            }
+        });
+    </script>
+    <script>
+        var addresfield = document.getElementById('endereco-adressservices');
+        var addresext = document.querySelectorAll('.endereco-adressservicesext');
+        addresfield.addEventListener('change', function() {
+            if (this.checked) {
+                addresext.forEach( function(element) {
+                    element.style.display = 'table-row';
+                });
+            } else {
+                addresext.forEach( function(element) {
+                    element.style.display = 'none';
+                });
             }
         })
     </script>
-
-    <fieldset>
-        <legend><strong>[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_HEADLINE3"}]</strong></legend>
-        <table class="ettm-table">
-            <tr>
-                <td></td>
-                <td>[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_COLOR_COL1"}]</td>
-                <td>[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_COLOR_COL2"}]</td>
-                <td>[{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_COLOR_COL3"}]</td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_PRIMARYCOLOR"}]
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sPRIMARYCOLOR]" value="[{$cstrs.sPRIMARYCOLOR}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sPRIMARYCOLORHOVER]" value="[{$cstrs.sPRIMARYCOLORHOVER}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sPRIMARYCOLORTEXT]" value="[{$cstrs.sPRIMARYCOLORTEXT}]">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_SECONDARYCOLOR"}]
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSECONDARYCOLOR]" value="[{$cstrs.sSECONDARYCOLOR}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSECONDARYCOLORHOVER]" value="[{$cstrs.sSECONDARYCOLORHOVER}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSECONDARYCOLORTEXT]" value="[{$cstrs.sSECONDARYCOLORTEXT}]">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_WARNINGCOLOR"}]
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sWARNINGCOLOR]" value="[{$cstrs.sWARNINGCOLOR}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sWARNINGCOLORHOVER]" value="[{$cstrs.sWARNINGCOLORHOVER}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sWARNINGCOLORTEXT]" value="[{$cstrs.sWARNINGCOLORTEXT}]">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    [{oxmultilang ident="ENDERECOCLIENTOX_SETTINGS_SUCCESSCOLOR"}]
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSUCCESSCOLOR]" value="[{$cstrs.sSUCCESSCOLOR}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSUCCESSCOLORHOVER]" value="[{$cstrs.sSUCCESSCOLORHOVER}]">
-                </td>
-                <td>
-                    <input type="color" class="editinput" size="60" maxlength="255" name="cstrs[sSUCCESSCOLORTEXT]" value="[{$cstrs.sSUCCESSCOLORTEXT}]">
-                </td>
-            </tr>
-        </table>
-    </fieldset>
 
     <input type="submit" class="edittext" name="save" value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[{oxmultilang ident="GENERAL_SAVE"}]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" onClick="Javascript:document.myedit.fnc.value='save'"><br>
 

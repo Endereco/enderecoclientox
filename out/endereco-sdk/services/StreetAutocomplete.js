@@ -34,6 +34,7 @@ function StreetAutocomplete(config) {
     }
     this.defaultConfig = {
         'useWatcher': true,
+        'referer': 'not_set',
         'tid': 'not_set'
     };
     this.fieldsAreSet = false;
@@ -143,11 +144,19 @@ function StreetAutocomplete(config) {
                 $self.requestBody.params.language = $self.config.language;
             }
 
+            /**
+             * Backward compatibility for referer
+             * If not set, it will use the browser url.
+             */
+            if ('not_set' === $self.config.referer) {
+                $self.config.referer = window.location.href;
+            }
+
             $self.connector.open('POST', $self.config.endpoint, true);
             $self.connector.setRequestHeader("Content-type", "application/json");
             $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
             $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
-            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
+            $self.connector.setRequestHeader("X-Transaction-Referer", $self.config.referer);
             $self.connector.send(JSON.stringify($self.requestBody));
         });
     }
@@ -308,11 +317,6 @@ function StreetAutocomplete(config) {
             console.log('Could not initiate StreetAutocomplete because of error.', e);
         }
 
-        // Generate TID if accounting service is set.
-        if (window.accounting && ('not_set' === $self.config.tid)) {
-            $self.config.tid = window.accounting.generateTID();
-        }
-
         // Disable browser autocomplete
         if ($self.isChrome()) {
             $self.inputElement.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
@@ -330,15 +334,36 @@ function StreetAutocomplete(config) {
                 if ($this === document.activeElement) {
                     $self.renderDropdown();
                 }
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
+
+                    if (0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
+                }
             }, function($data){console.log('Rejected with data:', $data)});
         });
 
         $self.inputElement.addEventListener('focus', function() {
+            if ('' === this.value && 'not_set' !== $self.config.tid) {
+                return;
+            }
             var acCall = $self.getPredictions();
             $self.saveOriginal();
             acCall.then( function($data) {
                 $self.predictions = $data.result.predictions;
                 $self.validate();
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
+
+                    if (0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
+                }
             }, function($data){console.log('Rejected with data:', $data)});
         });
 

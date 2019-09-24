@@ -1,220 +1,202 @@
 [{assign var="sitepath" value=$oViewConf->getBaseDir()}]
 
-[{capture assign="serviceConfiguration"}]
-    var colorTheme = {
-        'primaryColor': '[{$enderecocstrs.sPRIMARYCOLOR}]',
-        'primaryColorHover': '[{$enderecocstrs.sPRIMARYCOLORHOVER}]',
-        'primaryColorText': '[{$enderecocstrs.sPRIMARYCOLORTEXT}]',
-        'secondaryColor': '[{$enderecocstrs.sSECONDARYCOLOR}]',
-        'secondaryColorHover': '[{$enderecocstrs.sSECONDARYCOLORHOVER}]',
-        'secondaryColorText': '[{$enderecocstrs.sSECONDARYCOLORTEXT}]',
-        'warningColor': '[{$enderecocstrs.sWARNINGCOLOR}]',
-        'warningColorHover': '[{$enderecocstrs.sWARNINGCOLORHOVER}]',
-        'warningColorText': '[{$enderecocstrs.sWARNINGCOLORTEXT}]',
-        'successColor': '[{$enderecocstrs.sSUCCESSCOLOR}]',
-        'successColorHover': '[{$enderecocstrs.sSUCCESSCOLORHOVER}]',
-        'successColorText': '[{$enderecocstrs.sSUCCESSCOLORTEXT}]'
-    };
+<script>
+    var connectionListener;
 
-    var texts = {
-        'addressCheckHead': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_HEAD"}]',
-        'addressCheckButton': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_BTN"}]',
-        'addressCheckArea1': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA1"}]',
-        'addressCheckArea2': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA2"}]',
-    };
+    function initConfigs() {
+        if (undefined === window.enderecoGlobal) {
+            window.enderecoGlobal = {};
+        }
 
-    document.addEventListener('DOMContentLoaded', function() {
+        window.enderecoGlobal.colorsStatusIndicator = {
+            'warningColor': '[{$enderecocstrs.sWARNINGCOLOR}]',
+            'successColor': '[{$enderecocstrs.sSUCCESSCOLOR}]',
+        };
+
+        window.enderecoGlobal.colorsAddressCheck = {
+            'primaryColor': '[{$enderecocstrs.sADDRESSSERVCOLOR31}]',
+            'primaryColorHover': '[{$enderecocstrs.sADDRESSSERVCOLOR32}]',
+            'primaryColorText': '#fff',
+        };
+
+        window.enderecoGlobal.colorsInputAssistant = {
+            'secondaryColor': '[{$enderecocstrs.sADDRESSSERVCOLOR2}]',
+        };
+
+        window.enderecoGlobal.texts = {
+            'addressCheckHead': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_HEAD"}]',
+            'addressCheckButton': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_BTN"}]',
+            'addressCheckArea1': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA1"}]',
+            'addressCheckArea2': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA2"}]',
+        };
+    }
+
+    function enSetCookie(name,value,days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+    function enGetCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    function checkConnection() {
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
             if(4 === xhr.readyState) {
                 if ('connection_ok' === xhr.responseText) {
-                    console.log('Connection to endereco service service ok. Can init services.');
-                    initAccounting();
-                    [{if $enderecocstrs.bEMAILCHECK == 1}]initEmailCheck();[{/if}]
-                    [{if $enderecocstrs.bNAMECHECK == 1}]initNameCheck();[{/if}]
-                    initCountryAutocomplete();
-                    [{if $enderecocstrs.bPOSTCODEAUTOCOMPLETE == 1}]initPostCodeAutocomplete();[{/if}]
-                    [{if $enderecocstrs.bCITYNAMEAUTOCOMPLETE == 1}]initCityNameAutocomplete();[{/if}]
-                    [{if $enderecocstrs.bSTREETAUTOCOMPLETE == 1}]initStreetAutocomplete();[{/if}]
-                    [{if $enderecocstrs.bADDRESSCHECK == 1}]initAddressCheck();[{/if}]
-                    [{if $enderecocstrs.bPREPHONECHECK == 1}]initPrephoneCheck();[{/if}]
-                    [{if $enderecocstrs.bSTATUSINDICATOR == 1}]initStatusIndicator();[{/if}]
+                    console.log('Connection to endereco service server is working.');
+                    window.enderecoGlobal.connection = true;
                 } else {
-                    console.log('No connection to endereco service server. Don\'t init services.')
+                    console.log('No connection to endereco service server.');
+                    window.enderecoGlobal.connection = false;
                 }
             }
         };
         xhr.open('GET', '[{$sitepath}]?cl=enderecoconnectioncontroller', true);
         xhr.send();
-    });
+    }
 
-    /**
-     * Wrapper function to initiate country autocomplete services.
-     */
-    function initCountryAutocomplete() {
-        new CountryAutocomplete({
+    function initiateAddressServices() {
+        var serviceGroupInv = [], serviceGroupDel= [];
+
+        window.enderecoGlobal.countryAutocompleteInv = new CountryAutocomplete({
             'countrySelector': 'select[name="invadr[oxuser__oxcountryid]"]',
             'countryEndpoint': "[{$sitepath}]?cl=enderecocountrycontroller",
         });
+        window.enderecoGlobal.countryAutocompleteInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-        new CountryAutocomplete({
+        window.enderecoGlobal.countryAutocompleteDel = new CountryAutocomplete({
             'countrySelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
             'countryEndpoint': "[{$sitepath}]?cl=enderecocountrycontroller",
         });
-    }
+        window.enderecoGlobal.countryAutocompleteDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-    /**
-     * Wrapper function to initiate email check.
-     */
-    function initEmailCheck() {
-        // Register emailCheck for invoice address
-        window.invEmailCheck = new EmailCheck({
-            'inputSelector': '#userLoginName',
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+        window.enderecoGlobal.addressCheckInv = new AddressCheck({
+            'streetSelector': 'input[name="invadr[oxuser__oxstreet]"]',
+            'houseNumberSelector': 'input[name="invadr[oxuser__oxstreetnr]"]',
+            'postCodeSelector': 'input[name="invadr[oxuser__oxzip]"]',
+            'cityNameSelector': 'input[name="invadr[oxuser__oxcity]"]',
+            'countrySelector': 'select[name="invadr[oxuser__oxcountryid]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'colors' : window.enderecoGlobal.colorsAddressCheck,
+            'texts': window.enderecoGlobal.texts
         });
+        window.enderecoGlobal.addressCheckInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-        // Register emailCheck for invoice address
-        window.invEmailCheck2 = new EmailCheck({
-            'inputSelector': 'input[name="invadr[oxuser__oxusername]"]',
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+        window.enderecoGlobal.addressCheckDel = new AddressCheck({
+            'streetSelector': 'input[name="deladr[oxaddress__oxstreet]"]',
+            'houseNumberSelector': 'input[name="deladr[oxaddress__oxstreetnr]"]',
+            'postCodeSelector': 'input[name="deladr[oxaddress__oxzip]"]',
+            'cityNameSelector': 'input[name="deladr[oxaddress__oxcity]"]',
+            'countrySelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'colors' : window.enderecoGlobal.colorsAddressCheck,
+            'texts': window.enderecoGlobal.texts
         });
-    }
+        window.enderecoGlobal.addressCheckDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-    /**
-     * Wrapper function for name check service.
-     */
-    function initNameCheck() {
-        // Register nameCheck for invoice address
-        // Fix for flow.
-        [{if $oViewConf->getActiveTheme() == 'flow' }]
-            window.invNameCheck = new NameCheck({
-                'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
-                'salutationElement': 'select[name="invadr[oxuser__oxsal]"]',
-                'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-                'mapping': {
-                    'M': 'MR',
-                    'F': 'MRS',
-                    'N': '',
-                    'X': ''
-                },
-                'colors' : colorTheme
-            });
-            // Bootstrap jquery change is not triggering change event properly, so we fix it here
-            $('select[name="invadr[oxuser__oxsal]"]').change(function() {
-                window.invNameCheck.checkSalutation().then( function($data) {
-                    window.invNameCheck.resetStatus($data);
-                });
-            });
-
-            // Register nameCheck for delivery address
-            window.delNameCheck = new NameCheck({
-                'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
-                'salutationElement': 'select[name="deladr[oxaddress__oxsal]"]',
-                'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-                'mapping': {
-                    'M': 'MR',
-                    'F': 'MRS',
-                    'N': '',
-                    'X': ''
-                },
-                'colors' : colorTheme
-            });
-            // Bootstrap jquery change is not triggering change event properly, so we fix it here
-            $('select[name="deladr[oxaddress__oxsal]"]').change(function() {
-                window.delNameCheck.checkSalutation().then( function($data) {
-                    window.delNameCheck.resetStatus($data);
-                });
-            });
-        [{else}]
-            window.invNameCheck = new NameCheck({
-                'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
-                'salutationElement': 'select[name="invadr[oxuser__oxsal]"]',
-                'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-                'mapping': {
-                    'M': 'MR',
-                    'F': 'MRS',
-                    'N': '',
-                    'X': ''
-                },
-                'colors' : colorTheme
-            });
-
-            // Register nameCheck for delivery address
-            window.delNameCheck = new NameCheck({
-                'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
-                'salutationElement': 'select[name="deladr[oxaddress__oxsal]"]',
-                'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-                'mapping': {
-                    'M': 'MR',
-                    'F': 'MRS',
-                    'N': '',
-                    'X': ''
-                },
-                'colors' : colorTheme
-            });
-        [{/if}]
-    }
-
-    /**
-     * Wrapper function for postcode autocomplete services.
-     */
-    function initPostCodeAutocomplete() {
         // Register postCodeAutocomplete for invoice address
-        window.invPostCodeAutocomplete = new PostCodeAutocomplete({
+        window.enderecoGlobal.postCodeAutocompleteInv = new PostCodeAutocomplete({
             'inputSelector': 'input[name="invadr[oxuser__oxzip]"]',
             'secondaryInputSelectors': {
                 'cityName': 'input[name="invadr[oxuser__oxcity]"]',
                 'country': 'select[name="invadr[oxuser__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupInv,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
+        serviceGroupInv.push(window.enderecoGlobal.postCodeAutocompleteInv);
+        window.enderecoGlobal.postCodeAutocompleteInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register postCodeAutocomplete for del address
-        window.delPostCodeAutocomplete = new PostCodeAutocomplete({
+        window.enderecoGlobal.postCodeAutocompleteDel = new PostCodeAutocomplete({
             'inputSelector': 'input[name="deladr[oxaddress__oxzip]"]',
             'secondaryInputSelectors': {
                 'cityName': 'input[name="deladr[oxaddress__oxcity]"]',
                 'country': 'select[name="deladr[oxaddress__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupDel,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
-    }
+        serviceGroupDel.push(window.enderecoGlobal.postCodeAutocompleteDel);
+        window.enderecoGlobal.postCodeAutocompleteDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-    /**
-     * Wrapper function for city name autocomplete services.
-     */
-    function initCityNameAutocomplete() {
         // Register cityNameAutocomplete for invoice address
-        window.invCityNameAutocomplete = new CityNameAutocomplete({
+        window.enderecoGlobal.cityNameAutocompleteInv = new CityNameAutocomplete({
             'inputSelector': 'input[name="invadr[oxuser__oxcity]"]',
             'secondaryInputSelectors': {
                 'postCode': 'input[name="invadr[oxuser__oxzip]"]',
                 'country': 'select[name="invadr[oxuser__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupInv,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
+        serviceGroupInv.push(window.enderecoGlobal.cityNameAutocompleteInv);
+        window.enderecoGlobal.cityNameAutocompleteInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register cityNameAutocomplete for del address
-        window.delCityNameAutocomplete = new CityNameAutocomplete({
+        window.enderecoGlobal.cityNameAutocompleteDel = new CityNameAutocomplete({
             'inputSelector': 'input[name="deladr[oxaddress__oxcity]"]',
             'secondaryInputSelectors': {
                 'postCode': 'input[name="deladr[oxaddress__oxzip]"]',
                 'country': 'select[name="deladr[oxaddress__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupDel,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
-    }
+        serviceGroupDel.push(window.enderecoGlobal.cityNameAutocompleteDel);
+        window.enderecoGlobal.cityNameAutocompleteDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-    /**
-     * Wrapper function for street autocomplete services.
-     */
-    function initStreetAutocomplete() {
         // Register streetAutocomplete for invoice address
-        window.invStreetAutocomplete = new StreetAutocomplete({
+        window.enderecoGlobal.streetAutocompleteInv = new StreetAutocomplete({
             'inputSelector': 'input[name="invadr[oxuser__oxstreet]"]',
             'secondaryInputSelectors': {
                 'postCode': 'input[name="invadr[oxuser__oxzip]"]',
@@ -222,11 +204,18 @@
                 'country': 'select[name="invadr[oxuser__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupInv,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
+        serviceGroupInv.push(window.enderecoGlobal.streetAutocompleteInv);
+        window.enderecoGlobal.streetAutocompleteInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register streetAutocomplete for del address
-        window.delStreetAutocomplete = new StreetAutocomplete({
+        window.enderecoGlobal.streetAutocompleteDel = new StreetAutocomplete({
             'inputSelector': 'input[name="deladr[oxaddress__oxstreet]"]',
             'secondaryInputSelectors': {
                 'postCode': 'input[name="deladr[oxaddress__oxzip]"]',
@@ -234,452 +223,492 @@
                 'country': 'select[name="deladr[oxaddress__oxcountryid]"]'
             },
             'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme
+            'serviceGroup': serviceGroupDel,
+            'colors' : window.enderecoGlobal.colorsInputAssistant
         });
+        serviceGroupDel.push(window.enderecoGlobal.streetAutocompleteDel);
+        window.enderecoGlobal.streetAutocompleteDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
+
+        [{if $enderecocstrs.bADDRESSALWAYSCHECK == 1}]
+
+        if (!enGetCookie('enderecoAdressChecked')) {
+            var alwaysCheckInterval1 = setInterval( function() {
+                if (window.enderecoGlobal.countryAutocompleteInv.ready) {
+                    window.enderecoGlobal.addressCheckInv.startCheckProcess();
+                    enSetCookie('enderecoAdressChecked', 1, 30);
+                    clearInterval(alwaysCheckInterval1);
+                }
+            }, 200);
+
+            var alwaysCheckInterval2 = setInterval( function() {
+                if (window.enderecoGlobal.countryAutocompleteDel.ready) {
+                    window.enderecoGlobal.addressCheckDel.startCheckProcess();
+                    enSetCookie('enderecoAdressChecked', 1, 30);
+                    clearInterval(alwaysCheckInterval2);
+                }
+            }, 200);
+        }
+
+        [{/if}]
+
+        console.log(serviceGroupInv, serviceGroupDel);
     }
 
-    /**
-     * Wrapper for address check services.
-     */
-    function initAddressCheck() {
-        // Register addressCheck for invoice address
-        window.invAddressCheck = new AddressCheck({
-            'streetSelector': 'input[name="invadr[oxuser__oxstreet]"]',
-            'houseNumberSelector': 'input[name="invadr[oxuser__oxstreetnr]"]',
-            'postCodeSelector': 'input[name="invadr[oxuser__oxzip]"]',
-            'cityNameSelector': 'input[name="invadr[oxuser__oxcity]"]',
-            'countrySelector': 'select[name="invadr[oxuser__oxcountryid]"]',
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme,
-            'texts': texts
+    function initiateEmailServices() {
+        // Register emailCheck for invoice address
+        window.enderecoGlobal.emailCheckAccount = new EmailCheck({
+            'inputSelector': '#userLoginName',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
         });
+        window.enderecoGlobal.emailCheckAccount.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
-        // Register addressCheck for invoice address
-        window.delAddressCheck = new AddressCheck({
-            'streetSelector': 'input[name="deladr[oxaddress__oxstreet]"]',
-            'houseNumberSelector': 'input[name="deladr[oxaddress__oxstreetnr]"]',
-            'postCodeSelector': 'input[name="deladr[oxaddress__oxzip]"]',
-            'cityNameSelector': 'input[name="deladr[oxaddress__oxcity]"]',
-            'countrySelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'colors' : colorTheme,
-            'texts': texts
+        // Register emailCheck for invoice address
+        window.enderecoGlobal.emailCheckInv = new EmailCheck({
+            'inputSelector': 'input[name="invadr[oxuser__oxusername]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
         });
+        window.enderecoGlobal.emailCheckInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
     }
 
-    /**
-     * Wrapper for prephonecheck
-     */
-    function initPrephoneCheck() {
+    function initiateNameServices() {
+        // Register nameCheck for invoice address
+        // Fix for flow.
+        [{if $oViewConf->getActiveTheme() == 'flow' }]
+        window.enderecoGlobal.nameCheckInv = new NameCheck({
+            'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
+            'salutationElement': 'select[name="invadr[oxuser__oxsal]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'mapping': {
+                'M': 'MR',
+                'F': 'MRS',
+                'N': '',
+                'X': ''
+            },
+            'colors' : window.enderecoGlobal.colorTheme
+        });
+        // Bootstrap jquery change is not triggering change event properly, so we fix it here
+        $('select[name="invadr[oxuser__oxsal]"]').change(function() {
+            window.enderecoGlobal.nameCheckInv.checkSalutation().then( function($data) {
+                window.enderecoGlobal.nameCheckInv.resetStatus($data);
+            });
+        });
+
+        // Register nameCheck for delivery address
+        window.enderecoGlobal.nameCheckDel = new NameCheck({
+            'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
+            'salutationElement': 'select[name="deladr[oxaddress__oxsal]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'mapping': {
+                'M': 'MR',
+                'F': 'MRS',
+                'N': '',
+                'X': ''
+            },
+            'colors' : window.enderecoGlobal.colorTheme
+        });
+        // Bootstrap jquery change is not triggering change event properly, so we fix it here
+        $('select[name="deladr[oxaddress__oxsal]"]').change(function() {
+            window.enderecoGlobal.nameCheckDel.checkSalutation().then( function($data) {
+                window.enderecoGlobal.nameCheckDel.resetStatus($data);
+            });
+        });
+        [{else}]
+        window.enderecoGlobal.nameCheckInv = new NameCheck({
+            'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
+            'salutationElement': 'select[name="invadr[oxuser__oxsal]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'mapping': {
+                'M': 'MR',
+                'F': 'MRS',
+                'N': '',
+                'X': ''
+            },
+            'colors' : window.enderecoGlobal.colorTheme
+        });
+
+        // Register nameCheck for delivery address
+        window.enderecoGlobal.nameCheckDel = new NameCheck({
+            'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
+            'salutationElement': 'select[name="deladr[oxaddress__oxsal]"]',
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'mapping': {
+                'M': 'MR',
+                'F': 'MRS',
+                'N': '',
+                'X': ''
+            },
+            'colors' : window.enderecoGlobal.colorTheme
+        });
+        [{/if}]
+
+        window.enderecoGlobal.nameCheckInv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
+        window.enderecoGlobal.nameCheckDel.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
+    }
+
+    function initiatePhoneServices() {
+        var serviceGroupInv = [], serviceGroupDel= [];
+
         // Register prephoneCheck 1
-        window.invPrephoneCheck = new PrephoneCheck({
+        window.enderecoGlobal.prephoneCheckInvFon = new PrephoneCheck({
             'inputSelector': 'input[name="invadr[oxuser__oxfon]"]',
             'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupInv
         });
-
-        // Register prephoneCheck 1
-        window.delPrephoneCheck = new PrephoneCheck({
-            'inputSelector': 'input[name="deladr[oxaddress__oxfon]"]',
-            'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
-        });
+        serviceGroupInv.push(window.enderecoGlobal.prephoneCheckInvFon);
+        window.enderecoGlobal.prephoneCheckInvFon.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register prephoneCheck 2
-        window.invPrephoneCheck2 = new PrephoneCheck({
+        window.enderecoGlobal.prephoneCheckInvFax = new PrephoneCheck({
             'inputSelector': 'input[name="invadr[oxuser__oxfax]"]',
             'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupInv
         });
-
-        // Register prephoneCheck 2
-        window.delPrephoneCheck2 = new PrephoneCheck({
-            'inputSelector': 'input[name="deladr[oxaddress__oxfax]"]',
-            'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
-        });
+        serviceGroupInv.push(window.enderecoGlobal.prephoneCheckInvFax);
+        window.enderecoGlobal.prephoneCheckInvFax.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register prephoneCheck 3
-        window.invPrephoneCheck3 = new PrephoneCheck({
+        window.enderecoGlobal.prephoneCheckInvMob = new PrephoneCheck({
             'inputSelector': 'input[name="invadr[oxuser__oxmobfon]"]',
             'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupInv
         });
+        serviceGroupInv.push(window.enderecoGlobal.prephoneCheckInvMob);
+        window.enderecoGlobal.prephoneCheckInvMob.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
 
         // Register prephoneCheck 4
-        window.invPrephoneCheck4 = new PrephoneCheck({
+        window.enderecoGlobal.prephoneCheckInvPriv = new PrephoneCheck({
             'inputSelector': 'input[name="invadr[oxuser__oxprivfon]"]',
             'format': [{$enderecocstrs.sPHONEFORMAT}],
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller"
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupInv
         });
+        serviceGroupInv.push(window.enderecoGlobal.prephoneCheckInvPriv);
+        window.enderecoGlobal.prephoneCheckInvPriv.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
+
+        // Register prephoneCheck 1
+        window.enderecoGlobal.prephoneCheckDelFon = new PrephoneCheck({
+            'inputSelector': 'input[name="deladr[oxaddress__oxfon]"]',
+            'format': [{$enderecocstrs.sPHONEFORMAT}],
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupDel
+        });
+        serviceGroupDel.push(window.enderecoGlobal.prephoneCheckDelFon);
+        window.enderecoGlobal.prephoneCheckDelFon.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
+
+        // Register prephoneCheck 2
+        window.enderecoGlobal.prephoneCheckDelFax = new PrephoneCheck({
+            'inputSelector': 'input[name="deladr[oxaddress__oxfax]"]',
+            'format': [{$enderecocstrs.sPHONEFORMAT}],
+            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
+            'serviceGroup': serviceGroupDel
+        });
+        serviceGroupDel.push(window.enderecoGlobal.prephoneCheckDelFax);
+        window.enderecoGlobal.prephoneCheckDelFax.updateConfig(
+            {
+                'referer': window.enderecoGlobal.referer
+            }
+        );
     }
 
-    /**
-     * Wrapper function for status indicator initialization.
-     */
-    function initStatusIndicator() {
+    function initiateStatusIndicator() {
         [{if $oViewConf->getActiveTheme() == 'flow' }]
-            // Register emailCheck Status indicator for invoice address
-            setTimeout(function() {
-                window.invNameCheckStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
-                    'displaySelector': 'button[data-id="invadr_oxuser__oxfname"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register emailCheck Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.nameCheckStatusIndicatorInv = new StatusIndicator({
+                'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
+                'displaySelector': 'button[data-id="invadr_oxuser__oxfname"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
 
-            // Register emailCheck Status indicator for invoice address
-            setTimeout(function() {
-                window.delNameCheckStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
-                    'displaySelector': 'button[data-id="deladr_oxaddress__oxsal"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register emailCheck Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.nameCheckStatusIndicatorDel = new StatusIndicator({
+                'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
+                'displaySelector': 'button[data-id="deladr_oxaddress__oxsal"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
         [{else}]
-            // Register emailCheck Status indicator for invoice address
-            setTimeout(function() {
-                window.invNameCheckStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
-                    'displaySelector': 'select[name="invadr[oxuser__oxsal]"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register emailCheck Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.nameCheckStatusIndicatorInv = new StatusIndicator({
+                'inputSelector': 'input[name="invadr[oxuser__oxfname]"]',
+                'displaySelector': 'select[name="invadr[oxuser__oxsal]"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
 
-            // Register emailCheck Status indicator for invoice address
-            setTimeout(function() {
-                window.delNameCheckStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
-                    'displaySelector': 'select[name="deladr[oxaddress__oxsal]"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register emailCheck Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.nameCheckStatusIndicatorDel = new StatusIndicator({
+                'inputSelector': 'input[name="deladr[oxaddress__oxfname]"]',
+                'displaySelector': 'select[name="deladr[oxaddress__oxsal]"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
         [{/if}]
 
         // Register emailCheck Status indicator for invoice address
-        window.invEmailCheckStatusIndicator = new StatusIndicator({
+        window.enderecoGlobal.emailCheckStatusIndicatorInv = new StatusIndicator({
             'inputSelector': '#userLoginName',
             'displaySelector': '#userLoginName',
-            'colors' : colorTheme,
+            'colors' : window.enderecoGlobal.colorsStatusIndicator,
             'showIcons': true
         });
 
         // Register emailCheck Status indicator for invoice address
-        window.invEmailCheckStatusIndicator2 = new StatusIndicator({
+        window.enderecoGlobal.emailCheckStatusIndicatorInv2 = new StatusIndicator({
             'inputSelector': 'input[name="invadr[oxuser__oxusername]"]',
             'displaySelector': 'input[name="invadr[oxuser__oxusername]"]',
-            'colors' : colorTheme,
+            'colors' : window.enderecoGlobal.colorsStatusIndicator,
             'showIcons': true
         });
 
         // Register emailCheck Status indicator for invoice address
         setTimeout(function() {
-            window.invPrephoneCheck1StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheck1StatusIndicatorInv = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxfon]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxfon]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register emailCheck Status indicator for del address
         setTimeout(function() {
-            window.invPrephoneCheck1StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheck1StatusIndicatorDel = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxfon]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxfon]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register emailCheck Status indicator for invoice address
         setTimeout(function() {
-            window.invPrephoneCheck2StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheckStatusIndicatorInv2 = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxfax]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxfax]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register emailCheck Status indicator for invoice address
         setTimeout(function() {
-            window.delPrephoneCheck2StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheckStatusIndicatorDel2 = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxfax]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxfax]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         setTimeout(function() {
-            window.invPrephoneCheck3StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheckStatusIndicatorInv3 = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxmobfon]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxmobfon]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         setTimeout(function() {
-            window.invPrephoneCheck4StatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.prephoneCheckStatusIndicatorInv4 = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxprivfon]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxprivfon]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for invoice address
         setTimeout(function() {
-            window.invPostCodeAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.postCodeAutocompleteStatusIndicatorInv = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxzip]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxzip]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for del address
         setTimeout(function() {
-            window.delPostCodeAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.postCodeAutocompleteStatusIndicatorDel = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxzip]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxzip]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for invoice address
         setTimeout(function() {
-            window.invCityNameAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.cityNameAutocompleteStatusIndicatorInv = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxcity]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxcity]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for del address
         setTimeout(function() {
-            window.delCityNameAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.cityNameAutocompleteStatusIndicatorDel = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxcity]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxcity]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for invoice address
         setTimeout(function() {
-            window.invStreetAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.streetAutocompleteStatusIndicatorInv = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxstreet]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxstreet]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register postCodeAutocomplete Status indicator for del address
         setTimeout(function() {
-            window.delStreetAutocompleteStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.streetAutocompleteStatusIndicatorDel = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxstreet]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxstreet]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register house number Status indicator for invoice address
         setTimeout(function() {
-            window.invHouseNumberStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.houseNumberStatusIndicatorInv = new StatusIndicator({
                 'inputSelector': 'input[name="invadr[oxuser__oxstreetnr]"]',
                 'displaySelector': 'input[name="invadr[oxuser__oxstreetnr]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         // Register house number Status indicator for invoice address
         setTimeout(function() {
-            window.delHouseNumberStatusIndicator = new StatusIndicator({
+            window.enderecoGlobal.houseNumberStatusIndicatorDel = new StatusIndicator({
                 'inputSelector': 'input[name="deladr[oxaddress__oxstreetnr]"]',
                 'displaySelector': 'input[name="deladr[oxaddress__oxstreetnr]"]',
-                'colors' : colorTheme,
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
                 'showIcons': true
             });
         }, 500);
 
         [{if $oViewConf->getActiveTheme() == 'flow' }]
-            // Register house number Status indicator for invoice address
-            setTimeout(function() {
-                window.invCountryStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'select[name="invadr[oxuser__oxcountryid]"]',
-                    'displaySelector': 'button[data-id="invCountrySelect"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register house number Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.countryStatusIndicatorInv = new StatusIndicator({
+                'inputSelector': 'select[name="invadr[oxuser__oxcountryid]"]',
+                'displaySelector': 'button[data-id="invCountrySelect"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
 
-            // Register house number Status indicator for invoice address
-            setTimeout(function() {
-                window.delCountryStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
-                    'displaySelector': 'button[data-id="delCountrySelect"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register house number Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.countryStatusIndicatorDel = new StatusIndicator({
+                'inputSelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
+                'displaySelector': 'button[data-id="delCountrySelect"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
         [{else}]
-            // Register house number Status indicator for invoice address
-            setTimeout(function() {
-                window.invCountryStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'select[name="invadr[oxuser__oxcountryid]"]',
-                    'displaySelector': 'select[name="invadr[oxuser__oxcountryid]"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register house number Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.countryStatusIndicatorInv = new StatusIndicator({
+                'inputSelector': 'select[name="invadr[oxuser__oxcountryid]"]',
+                'displaySelector': 'select[name="invadr[oxuser__oxcountryid]"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
 
-            // Register house number Status indicator for invoice address
-            setTimeout(function() {
-                window.delCountryStatusIndicator = new StatusIndicator({
-                    'inputSelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
-                    'displaySelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
-                    'colors' : colorTheme,
-                    'showIcons': true
-                });
-            }, 500);
+        // Register house number Status indicator for invoice address
+        setTimeout(function() {
+            window.enderecoGlobal.countryStatusIndicatorDel = new StatusIndicator({
+                'inputSelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
+                'displaySelector': 'select[name="deladr[oxaddress__oxcountryid]"]',
+                'colors' : window.enderecoGlobal.colorsStatusIndicator,
+                'showIcons': true
+            });
+        }, 500);
         [{/if}]
+
     }
 
-    /**
-     * Accounting
-     */
-    function initAccounting() {
-        // Register accounting service
-        window.accounting = new Accounting({
-            'endpoint': "[{$sitepath}]?cl=enderecocontroller",
-            'groups': [
-                {
-                    'name': 'email',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        '#userLoginName',
-                        'input[name="invadr[oxuser__oxusername]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'name_inv',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'input[name="invadr[oxuser__oxfname]"]',
-                        'select[name="invadr[oxuser__oxsal]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'phone_inv',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'input[name="invadr[oxuser__oxfon]"]',
-                        'input[name="invadr[oxuser__oxfax]"]',
-                        'input[name="invadr[oxuser__oxmobfon]"]',
-                        'input[name="invadr[oxuser__oxprivfon]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'addr_inv',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'select[name="invadr[oxuser__oxcountryid]"]',
-                        'input[name="invadr[oxuser__oxcity]"]',
-                        'input[name="invadr[oxuser__oxzip]"]',
-                        'input[name="invadr[oxuser__oxstreet]"]',
-                        'input[name="invadr[oxuser__oxstreetnr]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'name_del',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'input[name="deladr[oxaddress__oxfname]"]',
-                        'select[name="deladr[oxaddress__oxsal]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'addr_del',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'select[name="deladr[oxaddress__oxcountryid]"]',
-                        'input[name="deladr[oxaddress__oxcity]"]',
-                        'input[name="deladr[oxaddress__oxzip]"]',
-                        'input[name="deladr[oxaddress__oxstreet]"]',
-                        'input[name="deladr[oxaddress__oxstreetnr]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                },
-                {
-                    'name': 'phone_del',
-                    'formSelector': '',
-                    'fieldsSelectors': [
-                        'input[name="deladr[oxaddress__oxfon]"]',
-                        'input[name="deladr[oxaddress__oxfax]"]'
-                    ],
-                    'validationFunction': function(form) {
-                        if (document.querySelectorAll('.alert-danger, .text-danger').length > 0) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-            ]
-        });
-    }
-[{/capture}]
-[{oxscript add=$serviceConfiguration}]
+    // Add connection listener
+    connectionListener = setInterval(
+        function() {
+            if (window.enderecoGlobal.connection) {
+                clearInterval(connectionListener);
+                initConfigs();
+                [{if $enderecocstrs.bADDRESSSERVICE == 1}] initiateAddressServices(); [{/if}]
+                [{if $enderecocstrs.bEMAILSERVICE == 1}] initiateEmailServices(); [{/if}]
+                [{if $enderecocstrs.bNAMESERVICE == 1}] initiateNameServices(); [{/if}]
+                [{if $enderecocstrs.bPHONESERVICE == 1}] initiatePhoneServices(); [{/if}]
+                [{if $enderecocstrs.bSTATUSINDICATOR == 1}] initiateStatusIndicator(); [{/if}]
+            }
+        },
+        300
+    );
+    checkConnection();
+</script>
+

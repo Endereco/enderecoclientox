@@ -25,46 +25,61 @@ $aLang = array(
 
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE1' => 'General settings:',
     'ENDERECOCLIENTOX_SETTINGS_API_KEY' => 'API-Key:',
-    'ENDERECOCLIENTOX_SETTINGS_KEEP' => 'Keep settings after deactivation',
-    'ENDERECOCLIENTOX_HELP_API_KEY' => 'API-Key is a passcode, you receive from your Endereco service provider.',
+    'ENDERECOCLIENTOX_SETTINGS_KEEP' => 'Save settings after deactivation',
+    'ENDERECOCLIENTOX_HELP_API_KEY' => 'API-Key is a passcode, you receive from www.endereco.de service provider.',
     'ENDERECOCLIENTOX_SETTINGS_STATUS' => 'Status:',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_OK' => 'Ok',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_OK_LONG' => ' - The connection to Endereco-Server was successfully established.',
-    'ENDERECOCLIENTOX_SETTINGS_STATUS_OK_HELP' => 'You are now connected to Endereco server and can start using services available',
+    'ENDERECOCLIENTOX_SETTINGS_STATUS_OK_HELP' => 'You are now connected to Endereco server',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_FAIL' => 'Error',
-    'ENDERECOCLIENTOX_SETTINGS_STATUS_FAIL_LONG' => ' - Connection to Endereco-Server failed. Please, check the API-Key.',
+    'ENDERECOCLIENTOX_SETTINGS_STATUS_FAIL_LONG' => ' - Connection to Endereco-Server failed. Please check API-Key.',
     'ENDERECOCLIENTOX_SETTINGS_STATUS_FAIL_HELP' => 'Connection failed. Please check the API-Key. If you have no API-Key, make sure to contact Endereco service provider at info@endereco.de.',
-
     'ENDERECOCLIENTOX_SETTINGS_ENDPOINT' => 'Service Endpoint:',
-    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE' => 'Live System',
-    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX' => 'Testing System',
-    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING' => ' DEV System',
-    'ENDERECOCLIENTOX_HELP_SOURCE' => 'There are two systems available to you, Live and Testing. The changes that are applied to Live system will affect your eCommerce platform. Make sure to perform tests in the testing system first.',
-
+    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_LIVE' => 'Live-System',
+    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_SANDBOX' => 'Sandbox-System',
+    'ENDERECOCLIENTOX_SETTINGS_ENDPOINT_STAGING' => 'Development-System',
+    'ENDERECOCLIENTOX_HELP_SOURCE' => 'Use live system for normal operations and staging system for development and testing.',
     'ENDERECOCLIENTOX_SETTINGS_HEADLINE2' => 'Services (activate/deactivate):',
 
-    'ENDERECOCLIENTOX_SETTINGS_STATUSINDICATOR' => 'Status:',
-    'ENDERECOCLIENTOX_HELP_STATUSINDICATOR' => 'Choose whether you want to display status for the data inserted or not. When deactivated, neither warning nor success sign will be displayed.',
+    'ENDERECOCLIENTOX_SETTINGS_STATUSINDICATOR' => 'Statusindicator:',
+    'ENDERECOCLIENTOX_HELP_STATUSINDICATOR' => 'Highlights fields with preselected colorcode to indicate whether the input is correct or not.',
+    'ENDERECOCLIENTOX_SETTINGS_SUCCESSCOLOR' => 'Success/Correct',
+    'ENDERECOCLIENTOX_SETTINGS_WARNINGCOLOR' => 'Warning',
 
-    'ENDERECOCLIENTOX_SETTINGS_POSTCODEA' => 'Postcode Autocomplete:',
+    'ENDERECOCLIENTOX_SETTINGS_POSTCODEA' => 'Postcode autocomplete:',
     'ENDERECOCLIENTOX_HELP_POSTCODEAUTOCOMPLETE' => 'While activated, this service provides the user with a postcode and related city name suggestions upon typed digits. Selected data will be automatically populated into the corresponding address fields.',
 
-    'ENDERECOCLIENTOX_SETTINGS_CITYNAMEA' => 'City name Autocomplete:',
+    'ENDERECOCLIENTOX_SETTINGS_CITYNAMEA' => 'Cityname Autocomplete:',
     'ENDERECOCLIENTOX_HELP_CITYNAMEAUTOCOMPLETE' => 'While activated, this service provides the user with a postcode and related city name suggestions upon inserted letters. Selected data will be automatically populated into the corresponding address fields.',
 
-    'ENDERECOCLIENTOX_SETTINGS_STREETA' => 'Street name Autocomplete:',
+    'ENDERECOCLIENTOX_SETTINGS_STREETA' => 'Streetname Autocomplete:',
     'ENDERECOCLIENTOX_HELP_STREETAUTOCOMPLETE' => 'While activated, this service provides the user with a street name suggestions upon inserted letters, available for chosen Postcode + City combination.',
 
-    'ENDERECOCLIENTOX_SETTINGS_EMAILCHECK' => 'eMail Check:',
+    'ENDERECOCLIENTOX_SETTINGS_EMAILCHECK' => 'E-Mail Check:',
     'ENDERECOCLIENTOX_HELP_EMAILCHECK' => 'While activated,  eMail Check verifies the syntax, availability and deliverability of an entered eMail Address. It also checks whether it is a one-time or spam eMail Address.',
 
     'ENDERECOCLIENTOX_SETTINGS_NAMECHECK' => 'Salutation Check:',
-    'ENDERECOCLIENTOX_HELP_NAMECHECK' => 'While activated, this service verifies whether chosen salutation corresponds to the first name. It is also corrects small and capital Letters',
+    'ENDERECOCLIENTOX_HELP_NAMECHECK' => 'While activated,  eMail Check verifies the syntax, availability and deliverability of an entered eMail Address. It also checks whether it is a one-time or spam eMail Address.',
 
-    'ENDERECOCLIENTOX_SETTINGS_PREPHONECHECK' => 'Area code check (Number formatting):',
+    'ENDERECOCLIENTOX_SETTINGS_PREPHONECHECK' => 'Prephone check (Number formatting):',
     'ENDERECOCLIENTOX_HELP_PREPHONECHECK' => 'White activated, this service verifies whether an inserted area code exists and formats the number in accordance to chosen format.',
 
-    'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT' => 'Formatting:',
+    'ENDERECOCLIENTOX_SETTINGS_ADDRESSSERVICE' => 'Address-Service:',
+    'ENDERECOCLIENTOX_HELP_ADDRESSSERVICE' => 'inputassistant and addresscheck.',
+    'ENDERECOCLIENTOX_SETTINGS_ALWAYSCHECK' => 'Check addresses of existing customers (once)',
+    'ENDERECOCLIENTOX_HELP_ALWAYSCHECK' => 'Checks the addresses of already registered customers, marks checked customers with a cookie to prevent double checking.',
+    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR1' => 'Color of selected dropdown elements.',
+    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR2' => 'Input color.',
+    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR3' => 'Pop-Up color (normal/active)',
+    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR4' => 'Pop-Up secondary color (normal/active)',
+
+    'ENDERECOCLIENTOX_SETTINGS_EMAILSERVICE' => 'E-Mail-Service',
+    'ENDERECOCLIENTOX_HELP_EMAILSERVICE' => 'Checks if E-Mail can be delivered.',
+
+    'ENDERECOCLIENTOX_SETTINGS_PHONESERVICE' => 'Phone-Service',
+    'ENDERECOCLIENTOX_HELP_PHONESERVICE' => 'Formats the phone number according to specified format.',
+
+    'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT' => 'Format:',
 
     'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT_0' => 'as entered',
     'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT_1' => 'national telephone numbers, only Digits',
@@ -77,16 +92,16 @@ $aLang = array(
     'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT_8' => 'international telephone numbers according to DIN 5008',
     'ENDERECOCLIENTOX_SETTINGS_PHONEFORMAT_9' => 'international telephone numbers according to E.123',
 
-    'ENDERECOCLIENTOX_HELP_PHONEFORMAT' => 'This service converts inserted telephone number according to the chosen format.',
+    'ENDERECOCLIENTOX_HELP_PHONEFORMAT' => 'This service converts inserted telephone numbers according to the choosen format.',
 
-    'ENDERECOCLIENTOX_SETTINGS_ADDRESSCHECK' => 'Address check:',
-    'ENDERECOCLIENTOX_HELP_ADDRESSCHECK' => 'While activated, this service performs the last check upon entered address information. In case of potential errors, the service will providea number of possible correct addresses that might be meant by the user.',
+    'ENDERECOCLIENTOX_SETTINGS_NAMESERVICE' => 'Salutation-Service',
+    'ENDERECOCLIENTOX_HELP_NAMESERVICE' => 'Checks if selected salutation is right (if possible).',
 
-    'ENDERECOCLIENTOX_SETTINGS_HEADLINE3' => 'Colors:', /*Hier kann mann schreiben: "IT is possible to change the displayed colors for text, data fields, hints as well as warning und success sign"*/
+    'ENDERECOCLIENTOX_SETTINGS_HEADLINE3' => 'Colors',
 
-    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL1' => 'default',
-    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL2' => 'mouseover',
-    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL3' => 'text',
+    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL1' => 'Default',
+    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL2' => 'Mouseover',
+    'ENDERECOCLIENTOX_SETTINGS_COLOR_COL3' => 'Text',
 
     'ENDERECOCLIENTOX_SETTINGS_PRIMARYCOLOR' => 'Main color:',
     'ENDERECOCLIENTOX_HELP_PRIMARYCOLOR' => '',

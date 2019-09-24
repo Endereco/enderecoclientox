@@ -44,6 +44,7 @@ function PrephoneCheck(config) {
     }
     this.defaultConfig = {
         'useWatcher': true,
+        'referer': 'not_set',
         'tid': 'not_set'
     };
     this.fieldsAreSet = false;
@@ -59,11 +60,6 @@ function PrephoneCheck(config) {
         } catch(e) {
             console.log('Could not initiate PrephoneCheck because of error', e);
             return;
-        }
-
-        // Generate TID if accounting service is set.
-        if (window.accounting && ('not_set' === $self.config.tid)) {
-            $self.config.tid = window.accounting.generateTID();
         }
 
         // Disable browser autocomplete
@@ -93,6 +89,16 @@ function PrephoneCheck(config) {
                 } else {
                     event = $self.createEvent('endereco.clean');
                     $self.inputElement.dispatchEvent(event);
+                }
+
+                if ($data.cmd && $data.cmd.use_tid) {
+                    $self.config.tid = $data.cmd.use_tid;
+
+                    if ($self.config.serviceGroup && 0 < $self.config.serviceGroup.length) {
+                        $self.config.serviceGroup.forEach( function(serviceObject) {
+                            serviceObject.updateConfig({'tid': $data.cmd.use_tid});
+                        })
+                    }
                 }
             });
 
@@ -132,13 +138,21 @@ function PrephoneCheck(config) {
                 }
             };
 
+            /**
+             * Backward compatibility for referer
+             * If not set, it will use the browser url.
+             */
+            if ('not_set' === $self.config.referer) {
+                $self.config.referer = window.location.href;
+            }
+
             $self.requestBody.params.prephoneNumber = $self.inputElement.value.trim();
             $self.requestBody.params.format = $self.format;
             $self.connector.open('POST', $self.config.endpoint, true);
             $self.connector.setRequestHeader("Content-type", "application/json");
             $self.connector.setRequestHeader("X-Auth-Key", $self.config.apiKey);
             $self.connector.setRequestHeader("X-Transaction-Id", $self.config.tid);
-            $self.connector.setRequestHeader("X-Transaction-Referer", window.location.href);
+            $self.connector.setRequestHeader("X-Transaction-Referer", $self.config.referer);
 
             $self.connector.send(JSON.stringify($self.requestBody));
         });

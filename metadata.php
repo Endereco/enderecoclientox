@@ -23,7 +23,7 @@ $aModule = array(
         'de' => 'Adressvalidierung + Korrekturvorschläge für Webshops',
     ),
     'thumbnail'    => 'endereco.png',
-    'version'      => '3.1',
+    'version'      => '3.2',
     'author'       => 'endereco',
     'email'        => 'info@endereco.de',
     'url'          => 'www.endereco.de',
@@ -44,6 +44,7 @@ $aModule = array(
     ),
     'blocks' => array(
         array('template' => 'layout/base.tpl', 'block' => 'base_js', 'file' => 'enderecosdk.tpl'),
+        array('template' => 'form/fieldset/user_billing.tpl', 'block' => 'form_user_billing_country', 'file' => 'enderecowidget.tpl'),
     ),
     'extend' => array(
         \OxidEsales\Eshop\Application\Model\User::class => \Endereco\OxidClient\Model\User::class,

@@ -41,6 +41,6 @@ class User extends User_parent
      */
     protected function onChangeUserData($aInvAddress)
     {
-        \Endereco\OxidClient\Model\Accounting::doAccounting();
+        Accounting::doAccounting();
     }
 }

@@ -86,8 +86,12 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
             'bSTREETAUTOCOMPLETE',
             'bEMAILCHECK',
             'bNAMECHECK',
+            'bEMAILSERVICE',
+            'bNAMESERVICE',
+            'bPHONESERVICE',
             'bPREPHONECHECK',
-            'bADDRESSCHECK',
+            'bADDRESSSERVICE',
+            'bADDRESSALWAYSCHECK',
             'bKEEPSETTINGS'
         );
 
@@ -121,6 +125,14 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
         $tried_http = false;
         $result = '';
 
+        // (Shop Version; active Theme)
+        $oTheme = oxNew(\OxidEsales\Eshop\Core\Theme::class);
+        $activeTheme = $oTheme->getActiveThemeId();
+        $shopVersion = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
+        $shopEdition = \OxidEsales\Facts\Facts::getEdition();
+        $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
+        $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
+
         while (true) {
             $ch = curl_init($api_url);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
@@ -134,8 +146,9 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
                 array(
                     'Content-Type: application/json',
                     'X-Auth-Key: ' . trim($aConfStrs['sAPIKEY']),
-                    'X-Transaction-Id: ' . 'connection_check',
+                    'X-Transaction-Id: ' . 'not_required',
                     'X-Transaction-Referer: ' . 'endereco_settings_page',
+                    'X-Agent: ' . $shopInfo,
                     'Content-Length: ' . strlen($data_string))
             );
 

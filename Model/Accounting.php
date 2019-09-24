@@ -14,6 +14,8 @@
  */
 namespace Endereco\OxidClient\Model;
 
+use OxidEsales\Eshop\Core\Registry;
+
 /**
  * Accounting
  *
@@ -39,84 +41,173 @@ class Accounting
      */
     public static function doAccounting()
     {
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
         try {
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
+            $tidsArray = (isset($_SESSION['endereco']))? $_SESSION['endereco']:array();
 
-            if (isset($_SESSION['endereco'])) {
-                $tidsArray = $_SESSION['endereco'];
-            } else {
-                $tidsArray = array();
-            }
-
-            $data = array(
-                'jsonrpc' => '2.0',
-                'method'  => 'doAccounting',
-            );
-
-            $data_string = json_encode($data);
             $hasTransactions = false;
-            $transactionId = "";
 
-            if ($tidsArray) {
-                $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
-                $sOxId = $oConfig->getShopId();
-                $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
-                $tried_http = false;
-                $result = '';
-
-                foreach ($tidsArray as $session_tid => $counter) {
-                    if (0 < $counter) {
-                        $hasTransactions = true;
-                        $transactionId = $session_tid;
-
-                        while (true) {
-                            $ch = curl_init($api_url);
-                            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-                            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 4 seconds
-                            curl_setopt($ch, CURLOPT_TIMEOUT, 2); // 4 seconds
-                            curl_setopt(
-                                $ch,
-                                CURLOPT_HTTPHEADER,
-                                array(
-                                    'Content-Type: application/json',
-                                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
-                                    'X-Transaction-Id: ' . $session_tid,
-                                    'X-Transaction-Referer: ' . $_SERVER['HTTP_REFERER'],
-                                    'Content-Length: ' . strlen($data_string))
-                            );
-                            curl_exec($ch);
-
-                            $ch_error = curl_errno($ch);
-
-                            // Timeout error. Service is not working.
-                            if (28 === $ch_error) {
-                                return;
-                            }
-
-                            // Could not connect and havent tried http yet.
-                            if ((0 !== $ch_error) && !$tried_http) {
-                                // Try replacing https with http, maybe ssl is dead for some reason.
-                                $api_url = str_replace('https://', 'http://', $api_url);
-                                $tried_http = true;
-                                continue;
-                            }
-
-                            break;
-                        }
-                    }
+            foreach ($tidsArray as $session_tid => $counter) {
+                if ('not_set' === $session_tid) {
+                    continue;
                 }
 
-                curl_close($ch);
-
-                unset($_SESSION['endereco']);
+                if (0 < $counter) {
+                    $hasTransactions = true;
+                    self::accountTid($session_tid);
+                }
             }
+
+            if ($hasTransactions) {
+                self::convertTid($session_tid);
+            }
+
+
+            unset($_SESSION['endereco']);
         } catch (\Exception $e) {
             // Do nothing on error.
         }
+        return;
+    }
+
+    /**
+     * Send doConversion for separate tids.
+     *
+     * @return void
+     */
+    public static function convertTid()
+    {
+        $data = array(
+            'jsonrpc' => '2.0',
+            'method'  => 'doConversion',
+        );
+        $data_string = json_encode($data);
+        $oConfig = Registry::getConfig();
+        $sOxId = $oConfig->getShopId();
+        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
+        $tried_http = false;
+        $result = '';
+
+        // (Shop Version; active Theme)
+        $oTheme = oxNew(\OxidEsales\Eshop\Core\Theme::class);
+        $activeTheme = $oTheme->getActiveThemeId();
+        $shopVersion = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
+        $shopEdition = \OxidEsales\Facts\Facts::getEdition();
+        $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
+        $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
+
+        while (true) {
+            $ch = curl_init($api_url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 4 seconds
+            curl_setopt($ch, CURLOPT_TIMEOUT, 2); // 4 seconds
+            curl_setopt(
+                $ch,
+                CURLOPT_HTTPHEADER,
+                array(
+                    'Content-Type: application/json',
+                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
+                    'X-Transaction-Id: ' . 'not_required',
+                    'X-Transaction-Referer: ' . $oConfig->getTopActiveView()->getClassName(),
+                    'X-Agent: ' . $shopInfo,
+                    'Content-Length: ' . strlen($data_string))
+            );
+            curl_exec($ch);
+
+            $ch_error = curl_errno($ch);
+            curl_close($ch);
+
+            // Timeout error. Service is not working.
+            if (28 === $ch_error) {
+                return;
+            }
+
+            // Could not connect and havent tried http yet.
+            if ((0 !== $ch_error) && !$tried_http) {
+                // Try replacing https with http, maybe ssl is dead for some reason.
+                $api_url = str_replace('https://', 'http://', $api_url);
+                $tried_http = true;
+                continue;
+            }
+
+            break;
+        }
+        return;
+    }
+
+    /**
+     * Send doAccouting for separate tids.
+     *
+     * @param string $tid Transaction id.
+     *
+     * @return void;
+     */
+    public static function accountTid($tid)
+    {
+        $data = array(
+            'jsonrpc' => '2.0',
+            'method'  => 'doAccounting',
+        );
+        $transactionId = $tid;
+        $data_string = json_encode($data);
+
+        $oConfig = Registry::getConfig();
+        $sOxId = $oConfig->getShopId();
+        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
+        $tried_http = false;
+        $result = '';
+
+        // (Shop Version; active Theme)
+        $oTheme = oxNew(\OxidEsales\Eshop\Core\Theme::class);
+        $activeTheme = $oTheme->getActiveThemeId();
+        $shopVersion = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
+        $shopEdition = \OxidEsales\Facts\Facts::getEdition();
+        $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
+        $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
+
+        while (true) {
+            $ch = curl_init($api_url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2); // 4 seconds
+            curl_setopt($ch, CURLOPT_TIMEOUT, 2); // 4 seconds
+            curl_setopt(
+                $ch,
+                CURLOPT_HTTPHEADER,
+                array(
+                    'Content-Type: application/json',
+                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
+                    'X-Transaction-Id: ' . $transactionId,
+                    'X-Transaction-Referer: ' . $oConfig->getTopActiveView()->getClassName(),
+                    'X-Agent: ' . $shopInfo,
+                    'Content-Length: ' . strlen($data_string))
+            );
+            curl_exec($ch);
+            $ch_error = curl_errno($ch);
+
+            // Timeout error. Service is not working.
+            if (28 === $ch_error) {
+                return;
+            }
+
+            // Could not connect and havent tried http yet.
+            if ((0 !== $ch_error) && !$tried_http) {
+                // Try replacing https with http, maybe ssl is dead for some reason.
+                $api_url = str_replace('https://', 'http://', $api_url);
+                $tried_http = true;
+                continue;
+            }
+            curl_close($ch);
+
+            break;
+        }
+
+        return;
     }
 
     /**

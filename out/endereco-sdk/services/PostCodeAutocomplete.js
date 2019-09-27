@@ -506,6 +506,11 @@ function PostCodeAutocomplete(config) {
                 $self.removeDropdown();
             }
 
+            if ('Tab' === mEvent.key || 'Tab' === mEvent.key) {
+                $self.saveOriginal();
+                $self.removeDropdown();
+            }
+
             if ($self.blockInput) {
                 mEvent.preventDefault();
                 return;

@@ -387,11 +387,11 @@ function CityNameAutocomplete(config) {
         });
 
         $self.inputElement.addEventListener('focus', function() {
+            $self.saveOriginal();
             if ('' === this.value && 'not_set' !== $self.config.tid) {
                 return;
             }
             var acCall = $self.getPredictions();
-            $self.saveOriginal();
             acCall.then( function($data) {
                 $self.predictions = $data.result.predictions;
                 $self.validate();
@@ -412,7 +412,7 @@ function CityNameAutocomplete(config) {
         // Register blur event
         $self.inputElement.addEventListener('blur', function() {
             $self.removeDropdown();
-            $self.restoreOriginal();
+            $self.saveOriginal();
             $self.validate();
         });
 

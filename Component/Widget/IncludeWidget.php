@@ -70,7 +70,7 @@ class IncludeWidget extends \OxidEsales\Eshop\Application\Component\Widget\Widge
         }
         $this->_aViewData['enderecocstrs'] = array();
 
-        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox-persist'";
+        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox'";
         $resultSet = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getAll(
             $sql,
             array($oConfig->getConfigParam('sConfigKey'), $sOxId)

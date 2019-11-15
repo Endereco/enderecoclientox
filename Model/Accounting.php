@@ -86,7 +86,7 @@ class Accounting
         $data_string = json_encode($data);
         $oConfig = Registry::getConfig();
         $sOxId = $oConfig->getShopId();
-        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
+        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox');
         $tried_http = false;
         $result = '';
 
@@ -110,7 +110,7 @@ class Accounting
                 CURLOPT_HTTPHEADER,
                 array(
                     'Content-Type: application/json',
-                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
+                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox')),
                     'X-Transaction-Id: ' . 'not_required',
                     'X-Transaction-Referer: ' . $oConfig->getTopActiveView()->getClassName(),
                     'X-Agent: ' . $shopInfo,
@@ -157,7 +157,7 @@ class Accounting
 
         $oConfig = Registry::getConfig();
         $sOxId = $oConfig->getShopId();
-        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
+        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox');
         $tried_http = false;
         $result = '';
 
@@ -181,7 +181,7 @@ class Accounting
                 CURLOPT_HTTPHEADER,
                 array(
                     'Content-Type: application/json',
-                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
+                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox')),
                     'X-Transaction-Id: ' . $transactionId,
                     'X-Transaction-Referer: ' . $oConfig->getTopActiveView()->getClassName(),
                     'X-Agent: ' . $shopInfo,

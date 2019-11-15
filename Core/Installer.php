@@ -44,38 +44,38 @@ class Installer
         $oConfig = Registry::getConfig();
         $sOxId = $oConfig->getShopId();
 
-        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox-persist'";
+        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox'";
         $resultSet = DatabaseProvider::getDb()->getAll(
             $sql,
             array($oConfig->getConfigParam('sConfigKey'), $sOxId)
         );
 
         // Set default values
+        // TODO: test and possibly remove in the next release.
         if (0 === count($resultSet)) {
-            $oConfig->saveShopConfVar('str', 'sCONNSTATUS', '0', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sAPIKEY', '', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sSERVICEURL', 'https://endereco-service.de/rpc/v1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bKEEPSETTINGS', '1', $sOxId, 'module:enderecoclientox-persist');
+            $oConfig->saveShopConfVar('str', 'sCONNSTATUS', '0', $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('str', 'sAPIKEY', '', $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('str', 'sSERVICEURL', 'https://endereco-service.de/rpc/v1', $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bKEEPSETTINGS', true, $sOxId, 'module:enderecoclientox');
 
-            $oConfig->saveShopConfVar('str', 'bSTATUSINDICATOR', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bADDRESSSERVICE', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bADDRESSALWAYSCHECK', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bEMAILSERVICE', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bNAMESERVICE', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'bPHONESERVICE', '1', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sPHONEFORMAT', '8', $sOxId, 'module:enderecoclientox-persist');
+            $oConfig->saveShopConfVar('bool', 'bSTATUSINDICATOR', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bADDRESSSERVICE', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bADDRESSALWAYSCHECK', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bEMAILSERVICE', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bNAMESERVICE', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('bool', 'bPHONESERVICE', true, $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('str', 'sPHONEFORMAT', '8', $sOxId, 'module:enderecoclientox');
 
             // AddressCheck.
-            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR31', '#009EC0', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR32', '#0089a7', $sOxId, 'module:enderecoclientox-persist');
+            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR31', '#009EC0', $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR32', '#0089a7', $sOxId, 'module:enderecoclientox');
 
             // Input Assistant.
-            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR1', '#0089a7', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR2', '#fc6621', $sOxId, 'module:enderecoclientox-persist');
+            $oConfig->saveShopConfVar('str', 'sADDRESSSERVCOLOR2', '#fc6621', $sOxId, 'module:enderecoclientox');
 
             // Status Indicator.
-            $oConfig->saveShopConfVar('str', 'sSUCCESSCOLOR', '#5cb85c', $sOxId, 'module:enderecoclientox-persist');
-            $oConfig->saveShopConfVar('str', 'sWARNINGCOLOR', '#f0ad4e', $sOxId, 'module:enderecoclientox-persist');
+            $oConfig->saveShopConfVar('str', 'sSUCCESSCOLOR', '#5cb85c', $sOxId, 'module:enderecoclientox');
+            $oConfig->saveShopConfVar('str', 'sWARNINGCOLOR', '#f0ad4e', $sOxId, 'module:enderecoclientox');
         }
     }
 
@@ -87,10 +87,11 @@ class Installer
         $oConfig = Registry::getConfig();
         $sOxId = $oConfig->getShopId();
 
-        $keepAfterDeactivation = intval($oConfig->getShopConfVar('bKEEPSETTINGS', $sOxId, 'module:enderecoclientox-persist'));
+        $keepAfterDeactivation = $oConfig->getShopConfVar('bKEEPSETTINGS', $sOxId, 'module:enderecoclientox');
 
-        if (1 !== $keepAfterDeactivation) {
-            DatabaseProvider::getDB()->execute("DELETE FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox-persist'", array($sOxId));
+        if (!$keepAfterDeactivation) {
+            DatabaseProvider::getDB()->execute("DELETE FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox-persist'", array($sOxId)); // TODO: clean up DB, remove this in next update.
+            DatabaseProvider::getDB()->execute("DELETE FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox'", array($sOxId));
         }
 
         self::cleanTmp();

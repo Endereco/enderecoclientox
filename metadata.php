@@ -23,7 +23,7 @@ $aModule = array(
         'de' => 'Adressvalidierung + Korrekturvorschläge für Webshops',
     ),
     'thumbnail'    => 'endereco.png',
-    'version'      => '3.2.4',
+    'version'      => '3.2.5',
     'author'       => 'endereco',
     'email'        => 'info@endereco.de',
     'url'          => 'www.endereco.de',
@@ -49,4 +49,22 @@ $aModule = array(
     'extend' => array(
         \OxidEsales\Eshop\Application\Model\User::class => \Endereco\OxidClient\Model\User::class,
     ),
+    'settings' => array(
+        array('group' => 'main', 'name' => 'sCONNSTATUS', 'type' => 'str', 'value' => '0'),
+        array('group' => 'main', 'name' => 'sAPIKEY', 'type' => 'str', 'value' => ''),
+        array('group' => 'main', 'name' => 'sSERVICEURL', 'type' => 'str', 'value' => 'https://endereco-service.de/rpc/v1'),
+        array('group' => 'main', 'name' => 'bKEEPSETTINGS', 'type' => 'bool', 'value' => 'true'),
+        array('group' => 'main', 'name' => 'bSTATUSINDICATOR', 'type' => 'bool', 'value' => 'true'),
+        array('group' => 'main', 'name' => 'bADDRESSSERVICE', 'type' => 'bool', 'value' => 'true'),
+        array('group' => 'main', 'name' => 'bADDRESSALWAYSCHECK', 'type' => 'bool', 'value' => 'true'),
+        array('group' => 'main', 'name' => 'bEMAILSERVICE', 'type' => 'bool','value' => 'true'),
+        array('group' => 'main', 'name' => 'bNAMESERVICE', 'type' => 'bool','value' => 'true'),
+        array('group' => 'main', 'name' => 'bPHONESERVICE', 'type' => 'bool','value' => 'true'),
+        array('group' => 'main', 'name' => 'sPHONEFORMAT', 'type' => 'str', 'value' => '8'),
+        array('group' => 'main', 'name' => 'sADDRESSSERVCOLOR31', 'type' => 'str', 'value' => '#009EC0'),
+        array('group' => 'main', 'name' => 'sADDRESSSERVCOLOR32', 'type' => 'str', 'value' => '#0089a7'),
+        array('group' => 'main', 'name' => 'sADDRESSSERVCOLOR2', 'type' => 'str', 'value' => '#fc6621'),
+        array('group' => 'main', 'name' => 'sSUCCESSCOLOR', 'type' => 'str', 'value' => '#5cb85c'),
+        array('group' => 'main', 'name' => 'sWARNINGCOLOR', 'type' => 'str', 'value' => '#f0ad4e'),
+    )
 );

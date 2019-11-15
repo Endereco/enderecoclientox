@@ -43,8 +43,6 @@ $aLang = array(
 
     'ENDERECOCLIENTOX_SETTINGS_STATUSINDICATOR' => 'Statusindicator:',
     'ENDERECOCLIENTOX_HELP_STATUSINDICATOR' => 'Highlights fields with preselected colorcode to indicate whether the input is correct or not.',
-    'ENDERECOCLIENTOX_SETTINGS_SUCCESSCOLOR' => 'Success/Correct',
-    'ENDERECOCLIENTOX_SETTINGS_WARNINGCOLOR' => 'Warning',
 
     'ENDERECOCLIENTOX_SETTINGS_POSTCODEA' => 'Postcode autocomplete:',
     'ENDERECOCLIENTOX_HELP_POSTCODEAUTOCOMPLETE' => 'While activated, this service provides the user with a postcode and related city name suggestions upon typed digits. Selected data will be automatically populated into the corresponding address fields.',
@@ -69,7 +67,7 @@ $aLang = array(
     'ENDERECOCLIENTOX_SETTINGS_ALWAYSCHECK' => 'Check addresses of existing customers (once)',
     'ENDERECOCLIENTOX_HELP_ALWAYSCHECK' => 'Checks the addresses of already registered customers, marks checked customers with a cookie to prevent double checking.',
     'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR1' => 'Color of selected dropdown elements.',
-    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR2' => 'Input color.',
+    'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR2' => 'Input color',
     'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR3' => 'Pop-Up color (normal/active)',
     'ENDERECOCLIENTOX_SETTINGS_ADRESSSERV_COLOR4' => 'Pop-Up secondary color (normal/active)',
 
@@ -122,4 +120,22 @@ $aLang = array(
     'ENDERECOCLIENTOX_HELP_SUCCESSCOLOR' => '',
     'ENDERECOCLIENTOX_HELP_SUCCESSCOLORHOVER' => '',
     'ENDERECOCLIENTOX_HELP_SUCCESSCOLORTEXT' => '',
+
+    'SHOP_MODULE_GROUP_main' => 'General settings',
+    'SHOP_MODULE_sCONNSTATUS' => 'Status',
+    'SHOP_MODULE_sAPIKEY' => 'API-Key',
+    'SHOP_MODULE_sSERVICEURL' => 'Service Endpoint',
+    'SHOP_MODULE_bKEEPSETTINGS' => 'Save settings after deactivation',
+    'SHOP_MODULE_bSTATUSINDICATOR' => 'Statusindicator',
+    'SHOP_MODULE_bADDRESSSERVICE' => 'Address-Service',
+    'SHOP_MODULE_bADDRESSALWAYSCHECK' => 'Check addresses of existing customers (once)',
+    'SHOP_MODULE_bEMAILSERVICE' => 'E-Mail-Service',
+    'SHOP_MODULE_bNAMESERVICE' => 'Salutation-Service',
+    'SHOP_MODULE_bPHONESERVICE' => 'Phone-Service',
+    'SHOP_MODULE_sPHONEFORMAT' => 'Format',
+    'SHOP_MODULE_sADDRESSSERVCOLOR31' => 'Pop-Up color (normal)',
+    'SHOP_MODULE_sADDRESSSERVCOLOR32' => 'Pop-Up color (active)',
+    'SHOP_MODULE_sADDRESSSERVCOLOR2' => 'Input color',
+    'SHOP_MODULE_sSUCCESSCOLOR' => 'Color for success',
+    'SHOP_MODULE_sWARNINGCOLOR' => 'Color for warning',
 );

@@ -73,7 +73,7 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
         $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
         $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
 
-        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox-persist');
+        $api_url = $oConfig->getShopConfVar('sSERVICEURL', $sOxId, 'module:enderecoclientox');
         $tried_http = false;
         $result = '';
 
@@ -90,7 +90,7 @@ class FrontendController extends \OxidEsales\Eshop\Application\Controller\Fronte
                 CURLOPT_HTTPHEADER,
                 array(
                     'Content-Type: application/json',
-                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox-persist')),
+                    'X-Auth-Key: ' . trim($oConfig->getShopConfVar('sAPIKEY', $sOxId, 'module:enderecoclientox')),
                     'X-Transaction-Id: ' . $tid,
                     'X-Transaction-Referer: ' . $_SERVER['HTTP_X_TRANSACTION_REFERER'],
                     'X-Agent: ' . $shopInfo,

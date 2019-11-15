@@ -58,7 +58,7 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
 
         $this->_aViewData['cstrs'] = array();
 
-        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox-persist'";
+        $sql = "SELECT `OXVARNAME`, DECODE( `OXVARVALUE`, ? ) AS `OXVARVALUE` FROM `oxconfig` WHERE `OXSHOPID` = ? AND `OXMODULE` = 'module:enderecoclientox'";
         $resultSet = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getAll(
             $sql,
             array($oConfig->getConfigParam('sConfigKey'), $sOxId)
@@ -80,16 +80,10 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
     {
         $oConfig = $this->getConfig();
         $checkboxes = array(
-            'bPOSTCODEAUTOCOMPLETE',
             'bSTATUSINDICATOR',
-            'bCITYNAMEAUTOCOMPLETE',
-            'bSTREETAUTOCOMPLETE',
-            'bEMAILCHECK',
-            'bNAMECHECK',
             'bEMAILSERVICE',
             'bNAMESERVICE',
             'bPHONESERVICE',
-            'bPREPHONECHECK',
             'bADDRESSSERVICE',
             'bADDRESSALWAYSCHECK',
             'bKEEPSETTINGS'
@@ -100,24 +94,44 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
 
         if (is_array($aConfStrs)) {
             foreach ($aConfStrs as $sVarName => $sVarVal) {
-                $oConfig->saveShopConfVar('str', $sVarName, $sVarVal, $sOxId, 'module:enderecoclientox-persist');
+                if (in_array($sVarName, $checkboxes)) {
+                    $oConfig->saveShopConfVar('bool', $sVarName, true, $sOxId, 'module:enderecoclientox');
+                } else {
+                    $oConfig->saveShopConfVar('str', $sVarName, $sVarVal, $sOxId, 'module:enderecoclientox');
+                }
+
             }
         }
 
         foreach ($checkboxes as $checkboxname) {
             if (!isset($aConfStrs[$checkboxname])) {
-                $oConfig->saveShopConfVar('str', $checkboxname, '0', $sOxId, 'module:enderecoclientox-persist');
+                $oConfig->saveShopConfVar('bool', $checkboxname, false, $sOxId, 'module:enderecoclientox');
             }
         }
+
+        // Check connection
+        $connStatus = $this->checkConnection();
+        $oConfig->saveShopConfVar('str', 'sCONNSTATUS', $connStatus, $sOxId, 'module:enderecoclientox');
+
+        return;
+    }
+
+    /**
+     * Checks if endereco service is available and if the api key is correct.
+     *
+     * @return int
+     */
+    public function checkConnection()
+    {
+        $oConfig = $this->getConfig();
+        $sOxId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('oxid');
+        $aConfStrs = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('cstrs');
 
         // Check connection
         $data = array(
             'jsonrpc' => '2.0',
             'id' => 1,
-            'method' => 'nameCheck',
-            'params' => array(
-                'name' => 'Brunhilde'
-            )
+            'method' => 'readinessCheck',
         );
         $data_string = json_encode($data);
 
@@ -167,7 +181,7 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
             // Still connection error?. Break then.
             if (0 !== $ch_error) {
                 $result = '';
-                $oConfig->saveShopConfVar('str', 'sCONNSTATUS', '0', $sOxId, 'module:enderecoclientox-persist');
+                return 0;
                 break;
             }
 
@@ -179,13 +193,9 @@ class Settings extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContr
         if ('' !== $result) {
             $resultArray = json_decode($result, true);
             if (isset($resultArray['result'])) {
-                $oConfig->saveShopConfVar('str', 'sCONNSTATUS', '1', $sOxId, 'module:enderecoclientox-persist');
-                return;
+                return 1;
             }
         }
-
-        $oConfig->saveShopConfVar('str', 'sCONNSTATUS', '0', $sOxId, 'module:enderecoclientox-persist');
-
-        return;
+        return 0;
     }
 }

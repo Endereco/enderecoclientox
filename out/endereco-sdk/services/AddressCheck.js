@@ -55,6 +55,9 @@ function AddressCheck(config) {
     };
     this.fieldsAreSet = false;
     this.dirty = false;
+    this.wip = false;
+    this.successCallback = [];
+    this.errorCallback = [];
     this.config = $self.mergeObjects([this.defaultConfig, config]);
     this.connector = new XMLHttpRequest();
 
@@ -206,6 +209,7 @@ function AddressCheck(config) {
 
     this.startCheckProcess = function() {
         var $self = this;
+        $self.wip = true;
 
         $self.checkAddress().then( function($data) {
             $self.predictions = $data.result.predictions;
@@ -227,7 +231,17 @@ function AddressCheck(config) {
                 }
             }
 
-        }, function($data){});
+            $self.wip = false;
+            $self.successCallback.forEach(function(callback) {
+                callback($data);
+            })
+
+        }, function($data){
+            $self.wip = false;
+            $self.errorCallback.forEach(function(callback) {
+                callback($data);
+            })
+        });
     };
 
 
@@ -391,6 +405,7 @@ function AddressCheck(config) {
                 // Window
                 window_element = document.createElement('div');
                 window_element.style.width = '100%';
+                window_element.style.boxSizing = 'border-box';
                 window_element.style.maxWidth = '480px';
                 window_element.style.backgroundColor = '#fff';
                 window_element.style.border = '1px solid #ccc';
@@ -402,6 +417,7 @@ function AddressCheck(config) {
                 window_header_element = document.createElement('div');
                 window_header_element.style.width = '100%';
                 window_header_element.style.padding = '8px 16px';
+                window_header_element.style.boxSizing = 'border-box';
                 window_header_element.style.color =  $self.config.colors.primaryColorText;
                 window_header_element.style.display = 'flex';
                 window_header_element.style.fontSize = '16px';
@@ -415,8 +431,9 @@ function AddressCheck(config) {
 
                 // Close button
                 close_element = document.createElement('span');
-                close_element.appendChild(document.createTextNode('✖'));
+                close_element.innerHTML = '&times;';
                 close_element.style.cursor = 'pointer';
+                close_element.style.boxSizing = 'border-box';
                 close_element.addEventListener('click', function() {
                     $self.removeOverlay();
                 });
@@ -426,10 +443,12 @@ function AddressCheck(config) {
                 window_body_element = document.createElement('div');
                 window_body_element.style.width = '100%';
                 window_body_element.style.padding = '8px 16px';
+                window_body_element.style.boxSizing = 'border-box';
                 window_body_element.style.backgroundColor = '#fff';
                 window_element.appendChild(window_body_element);
 
                 headline1_element = document.createElement('p');
+                headline1_element.style.boxSizing = 'border-box';
                 headline1_element.style.margin = '15px 0 5px';
                 headline1_element.appendChild(document.createTextNode($self.config.texts.addressCheckArea1));
                 window_body_element.appendChild(headline1_element);
@@ -439,6 +458,7 @@ function AddressCheck(config) {
                 default_label_element.style.fontWeight = '700';
                 default_label_element.style.width = '100%';
                 default_label_element.style.display = 'inline-block';
+                default_label_element.style.boxSizing = 'border-box';
                 default_label_element.setAttribute('data-offset', '-1');
                 default_label_element.addEventListener('click', function() {
                     $self.activeIndex = -1;
@@ -449,6 +469,7 @@ function AddressCheck(config) {
                 default_cb_element.setAttribute('name', 'endereco-radio');
                 default_cb_element.checked = true;
                 default_cb_element.style.marginRight = '10px';
+                default_cb_element.style.boxSizing = 'border-box';
                 default_label_element.appendChild(default_cb_element);
                 var address = $self.postCodeElement.value.trim() +
                     ' ' +
@@ -462,6 +483,7 @@ function AddressCheck(config) {
 
                 headline2_element = document.createElement('p');
                 headline2_element.style.margin = '15px 0 5px';
+                headline2_element.style.boxSizing = 'border-box';
                 headline2_element.appendChild(document.createTextNode($self.config.texts.addressCheckArea2));
                 window_body_element.appendChild(headline2_element);
 
@@ -472,6 +494,7 @@ function AddressCheck(config) {
                     default_label_element.style.fontWeight = '700';
                     default_label_element.style.width = '100%';
                     default_label_element.style.display = 'inline-block';
+                    default_label_element.style.boxSizing = 'border-box';
                     default_label_element.setAttribute('data-offset', counter);
                     default_label_element.addEventListener('click', function() {
                         $self.activeIndex = this.getAttribute('data-offset');
@@ -481,6 +504,7 @@ function AddressCheck(config) {
                     default_cb_element.setAttribute('type', 'radio');
                     default_cb_element.setAttribute('name', 'endereco-radio');
                     default_cb_element.style.marginRight = '10px';
+                    default_cb_element.style.boxSizing = 'border-box';
                     default_label_element.appendChild(default_cb_element);
                     var address = prediction.postCode +
                         ' ' +
@@ -497,6 +521,7 @@ function AddressCheck(config) {
                 // Window footer
                 window_footer_element = document.createElement('div');
                 window_footer_element.style.width = '100%';
+                window_footer_element.style.boxSizing = 'border-box';
                 window_footer_element.style.padding = '8px 16px';
                 window_footer_element.style.display = 'flex';
                 window_footer_element.style.justifyContent = 'flex-end';
@@ -505,7 +530,7 @@ function AddressCheck(config) {
 
                 // Submit
                 submit_element = document.createElement('button');
-                submit_element.setAttribute('class', 'endereco-submit-btn')
+                submit_element.setAttribute('class', 'endereco-submit-btn');
                 submit_element.appendChild(document.createTextNode($self.config.texts.addressCheckButton));
                 // Default button style
                 submit_element.style.color = $self.config.colors.primaryColorText;
@@ -515,6 +540,7 @@ function AddressCheck(config) {
                 submit_element.style.fontSize = '14px';
                 submit_element.style.borderRadius = '4px';
                 submit_element.style.textAlign = 'center';
+                submit_element.style.boxSizing = 'border-box';
 
                 submit_element.addEventListener('mouseover', function() {
                     this.style.backgroundColor = $self.config.colors.primaryColorHover;

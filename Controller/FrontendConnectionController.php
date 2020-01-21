@@ -61,7 +61,8 @@ class FrontendConnectionController extends \OxidEsales\Eshop\Application\Control
         $oTheme = oxNew(\OxidEsales\Eshop\Core\Theme::class);
         $activeTheme = $oTheme->getActiveThemeId();
         $shopVersion = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
-        $shopEdition = \OxidEsales\Facts\Facts::getEdition();
+        $oFacts = new \OxidEsales\Facts\Facts();
+        $shopEdition = $oFacts->getEdition();
         $moduleVersions = $oConfig->getConfigParam('aModuleVersions');
         $shopInfo = 'client:enderecoclientox '.$moduleVersions['enderecoclientox'].', shop:OXID eShop '.$shopEdition.' '.$shopVersion.', theme:'.$activeTheme;
 

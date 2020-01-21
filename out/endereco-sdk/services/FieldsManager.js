@@ -17,16 +17,15 @@ function FieldsManager(config) {
         }
 
         if (!$self.isSet && isNowSet) {
-            init();
+            $self.init();
         } else if ($self.isSet && isNowSet) {
-            syncFields();
+            $self.syncFields();
         } else {
             $self.isSet = false;
         }
     }, 300);
 
-    function init() {
-        console.log('Initiate StreetShadow');
+    this.init = function() {
         $self.inputStreetNameElement = document.querySelector($self.config.streetNameSelector);
         $self.inputNumberElement = document.querySelector($self.config.houseNumberSelector);
         $self.targetStreetElement = document.querySelector($self.config.streetSelector);
@@ -41,9 +40,10 @@ function FieldsManager(config) {
         });
 
         $self.isSet = true;
+        console.log('Fieldsmanager initiated');
     }
 
-    function syncFields() {
+    this.syncFields = function() {
         if ('' !== $self.inputStreetNameElement.value) {
             $self.targetStreetElement.value = $self.inputStreetNameElement.value + ' ' + $self.inputNumberElement.value;
         }

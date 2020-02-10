@@ -42,5 +42,6 @@ class User extends User_parent
     protected function onChangeUserData($aInvAddress)
     {
         Accounting::doAccounting();
+        parent::onChangeUserData($aInvAddress);
     }
 }

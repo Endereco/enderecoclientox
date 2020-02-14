@@ -23,7 +23,7 @@ $aModule = array(
         'de' => 'Adressvalidierung + Korrekturvorschläge für Webshops',
     ),
     'thumbnail'    => 'endereco.png',
-    'version'      => '3.3.0',
+    'version'      => '3.3.1',
     'author'       => 'endereco',
     'email'        => 'info@endereco.de',
     'url'          => 'www.endereco.de',

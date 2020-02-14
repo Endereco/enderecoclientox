@@ -23,11 +23,16 @@
             'secondaryColor': '[{$enderecocstrs.sADDRESSSERVCOLOR2}]',
         };
 
+        [{assign var="addressCheckHeadText" value="ENDERECOCLIENTOX_ADDRESSCHECK_HEAD"|oxmultilangassign}]
+        [{assign var="addressCheckButtonText" value="ENDERECOCLIENTOX_ADDRESSCHECK_BTN"|oxmultilangassign}]
+        [{assign var="addressCheckArea1Text" value="ENDERECOCLIENTOX_ADDRESSCHECK_AREA1"|oxmultilangassign}]
+        [{assign var="addressCheckArea2Text" value="ENDERECOCLIENTOX_ADDRESSCHECK_AREA2"|oxmultilangassign}]
+
         window.enderecoGlobal.texts = {
-            'addressCheckHead': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_HEAD"}]',
-            'addressCheckButton': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_BTN"}]',
-            'addressCheckArea1': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA1"}]',
-            'addressCheckArea2': '[{oxmultilang ident="ENDERECOCLIENTOX_ADDRESSCHECK_AREA2"}]',
+            'addressCheckHead': '[{$addressCheckHeadText|escape:quotes}]',
+            'addressCheckButton': '[{$addressCheckButtonText|escape:quotes}]',
+            'addressCheckArea1': '[{$addressCheckArea1Text|escape:quotes}]',
+            'addressCheckArea2': '[{$addressCheckArea2Text|escape:quotes}]'
         };
     }
 

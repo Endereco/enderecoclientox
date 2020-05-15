@@ -257,7 +257,13 @@ function AddressCheck(config) {
 
     this.isAnyEmpty = function() {
         var streetEmpty = ('' === $self.streetElement.value.trim());
-        var houseNumberEmpty = ('' === $self.houseNumberElement.value.trim());
+        var houseNumberEmpty;
+        if ($self.houseNumberElement.hasAttribute('required')) {
+            houseNumberEmpty = ('' === $self.houseNumberElement.value.trim());
+        } else {
+            houseNumberEmpty = false;
+        }
+
         var postCodeEmpty = ('' === $self.postCodeElement.value.trim());
         var cityNameEmpty = ('' === $self.cityNameElement.value.trim());
 
@@ -495,13 +501,12 @@ function AddressCheck(config) {
                 }
 
                 default_label_element.appendChild(default_cb_element);
-                var address = $self.postCodeElement.value.trim() +
-                    ' ' +
-                    $self.cityNameElement.value.trim() +
-                    ' ' +
-                    $self.streetElement.value.trim() +
-                    ' ' +
-                    $self.houseNumberElement.value.trim();
+                var countryCode = $self.countryElement.options[$self.countryElement.selectedIndex].getAttribute('data-code');
+                if ('fr' === countryCode) {
+                    var address = [$self.postCodeElement.value.trim(), $self.cityNameElement.value.trim(), $self.houseNumberElement.value.trim(), $self.streetElement.value.trim()].join(' ').trim();
+                } else {
+                    var address = [$self.postCodeElement.value.trim(), $self.cityNameElement.value.trim(), $self.streetElement.value.trim(), $self.houseNumberElement.value.trim()].join(' ').trim();
+                }
                 default_label_element.appendChild(document.createTextNode(address));
                 window_body_element.appendChild(default_label_element);
 
@@ -539,13 +544,13 @@ function AddressCheck(config) {
                     }
 
                     default_label_element.appendChild(default_cb_element);
-                    var address = prediction.postCode +
-                        ' ' +
-                        prediction.cityName +
-                        ' ' +
-                        prediction.street +
-                        ' ' +
-                        prediction.houseNumber;
+                    var countryCode = $self.countryElement.options[$self.countryElement.selectedIndex].getAttribute('data-code');
+                    if ('fr' === countryCode) {
+                        var address = [prediction.postCode, prediction.cityName, prediction.houseNumber, prediction.street].join(' ').trim();
+                    } else {
+                        var address = [prediction.postCode, prediction.cityName, prediction.street, prediction.houseNumber].join(' ').trim();
+                    }
+
                     default_label_element.appendChild(document.createTextNode(address));
                     window_body_element.appendChild(default_label_element);
                     counter++;
